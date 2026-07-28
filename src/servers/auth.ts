@@ -4,8 +4,40 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
-import type { LoginState } from "@/types/auth";
+import type {
+  AppMetadata,
+  AuthUser,
+  LoginState,
+  UserMetadata,
+} from "@/types/auth";
 import { loginSchema } from "@/validations/auth";
+
+/**
+ * Membaca metadata user dari klaim JWT. Diverifikasi lokal, tanpa panggilan
+ * jaringan ke Supabase — sama seperti yang dipakai proxy.
+ *
+ * Tidak menerima argumen, dan hanya mengembalikan data sesi pemanggilnya
+ * sendiri, jadi aman diekspos sebagai Server Action.
+ */
+export async function getAuthUser(): Promise<AuthUser | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+
+  if (!claims) return null;
+
+  const appMetadata = claims.app_metadata as AppMetadata | undefined;
+  const userMetadata = claims.user_metadata as UserMetadata | undefined;
+
+  return {
+    id: claims.sub,
+    email: claims.email ?? null,
+    name: userMetadata?.name ?? null,
+    // Diambil dari app_metadata, BUKAN claims.role — `claims.role` adalah role
+    // Postgres yang selalu bernilai "authenticated" untuk semua user.
+    role: appMetadata?.role ?? null,
+  };
+}
 
 export async function login(
   _prevState: LoginState,
