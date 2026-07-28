@@ -1,5 +1,9 @@
+import Link from "next/link";
+import { LogInIcon } from "lucide-react";
+
 import { ModeToggle } from "@/components/common/mode-toggle";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -8,6 +12,12 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <ModeToggle />
           <InstallPrompt />
+          <Button asChild>
+            <Link href="/auth/login">
+              <LogInIcon data-icon="inline-start" />
+              Masuk
+            </Link>
+          </Button>
         </div>
       </main>
     </div>
