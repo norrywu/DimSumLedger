@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import { AuthStoreProvider } from "@/components/providers/auth-store-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { getAuthUser } from "@/servers/auth";
 
@@ -52,7 +54,14 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <ServiceWorkerRegister />
-          <AuthStoreProvider user={user}>{children}</AuthStoreProvider>
+          <QueryProvider>
+            <AuthStoreProvider user={user}>
+              {children}
+              {/* Di dalam ThemeProvider: Toaster membaca tema lewat
+                  `useTheme()` untuk menyamakan warna light/dark. */}
+              <Toaster />
+            </AuthStoreProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

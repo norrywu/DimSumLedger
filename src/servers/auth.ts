@@ -8,7 +8,7 @@ import type {
   AppMetadata,
   AuthUser,
   LoginState,
-  UserMetadata,
+  SupabaseUserMetadata,
 } from "@/types/auth";
 import { loginSchema } from "@/validations/auth";
 
@@ -27,7 +27,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
   if (!claims) return null;
 
   const appMetadata = claims.app_metadata as AppMetadata | undefined;
-  const userMetadata = claims.user_metadata as UserMetadata | undefined;
+  const userMetadata = claims.user_metadata as SupabaseUserMetadata | undefined;
 
   return {
     id: claims.sub,

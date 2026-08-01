@@ -23,10 +23,14 @@ export type AppMetadata = {
 };
 
 /**
- * Bisa diubah user sendiri lewat `supabase.auth.updateUser()`.
- * JANGAN dipakai untuk keputusan hak akses.
+ * Bentuk klaim mentah `user_metadata` di dalam JWT. Bisa diubah user sendiri
+ * lewat `supabase.auth.updateUser()`, jadi JANGAN dipakai untuk keputusan hak
+ * akses.
+ *
+ * Berawalan `Supabase` supaya tidak tertukar dengan `UserMetadata` di
+ * `@/types/metadata`, yang merupakan bentuk user untuk tampilan sidebar.
  */
-export type UserMetadata = {
+export type SupabaseUserMetadata = {
   name?: string;
   email_verified?: boolean;
 };
