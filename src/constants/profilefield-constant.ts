@@ -1,5 +1,5 @@
 import type { SheetField } from "@/components/sheet-trigger";
-import type { ProfileSchema } from "@/validation/profile-validation";
+import type { ProfileSchema } from "@/validations/profile-validation";
 
 /** Isi sheet "Account". Urutannya menentukan urutan render di `TriggerSheet`. */
 export const PROFILE_FIELDS: SheetField<ProfileSchema>[] = [

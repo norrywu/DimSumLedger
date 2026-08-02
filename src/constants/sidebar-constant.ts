@@ -22,8 +22,9 @@ import type { NavItemsByRole } from "@/types/navigation";
  * Sub-item tidak punya ikon — `NavSubItem` sengaja cuma { title, url } dan
  * `nav-main` merendernya sebagai teks di dalam SidebarMenuSub.
  *
- * Dari semua URL di bawah, baru `/APP/admin/dashboard` yang halamannya ada;
- * sisanya kerangka dan akan 404 sampai dibuat.
+ * Yang halamannya sudah ada: `/APP/admin/dashboard`, `/APP/admin/products`,
+ * `/APP/admin/categories`, dan `/APP/admin/variants`. Sisanya kerangka dan
+ * akan 404 sampai dibuat.
  */
 export const navItems: NavItemsByRole = {
   admin: [
@@ -33,6 +34,7 @@ export const navItems: NavItemsByRole = {
       icon: Package,
       items: [
         { title: "Daftar Produk", url: "/APP/admin/products" },
+        { title: "Varian", url: "/APP/admin/variants" },
         { title: "Kategori", url: "/APP/admin/categories" },
       ],
     },

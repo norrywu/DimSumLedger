@@ -6,7 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/servers/auth";
 import type { AuthUser } from "@/types/auth";
-import { profileSchema } from "@/validation/profile-validation";
+import { profileSchema } from "@/validations/profile-validation";
 
 export type SaveProfileResult = {
   message: string;

@@ -1,0 +1,23 @@
+
+
+create table public.products (
+  id          uuid        primary key default gen_random_uuid(),
+  category_id uuid        not null references public.categories (id) on delete restrict,
+  nama        text        not null,
+  aktif       boolean     not null default true,
+  created_at  timestamptz not null default now()
+);
+
+create unique index products_nama_uniq on public.products (lower(nama));
+
+create index products_category_idx on public.products (category_id, nama);
+
+-- --- Keamanan -----------------------------------------------
+alter table public.products enable row level security;
+
+create policy "pengelola_akses_penuh" on public.products
+  for all to authenticated
+  using (internal.is_pengelola())
+  with check (internal.is_pengelola());
+
+grant select, insert, update, delete on table public.products to authenticated;

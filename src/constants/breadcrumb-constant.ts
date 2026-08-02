@@ -9,6 +9,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   cashier: "Kasir",
   dashboard: "Dasbor",
   products: "Produk",
+  variants: "Varian",
   categories: "Kategori",
   users: "Pengguna",
   transactions: "Transaksi",

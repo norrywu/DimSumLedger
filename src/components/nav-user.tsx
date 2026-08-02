@@ -29,7 +29,7 @@ import { PROFILE_FIELDS } from "@/constants/profilefield-constant";
 import {
   profileSchema,
   type ProfileSchema,
-} from "@/validation/profile-validation";
+} from "@/validations/profile-validation";
 import { useMutation } from "@tanstack/react-query";
 import { TriggerSheet } from "./sheet-trigger";
 
