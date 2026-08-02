@@ -1,4 +1,3 @@
-import { KategoriForm } from "./_components/categorie_form";
 import { CategoriesTable } from "./_components/categories-table";
 
 export default function CategoriesPage() {
@@ -11,7 +10,6 @@ export default function CategoriesPage() {
         </p>
       </div>
 
-      <KategoriForm />
       <CategoriesTable />
     </div>
   );

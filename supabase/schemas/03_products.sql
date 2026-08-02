@@ -4,7 +4,6 @@ create table public.products (
   id          uuid        primary key default gen_random_uuid(),
   category_id uuid        not null references public.categories (id) on delete restrict,
   nama        text        not null,
-  aktif       boolean     not null default true,
   created_at  timestamptz not null default now()
 );
 

@@ -5,31 +5,30 @@ import { useState } from "react";
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
 import { DataTableCard } from "@/components/common/data-table-card";
 import { Button } from "@/components/ui/button";
-import { useCategories, useDeleteCategory } from "@/hooks/use-categories";
-import type { Category } from "@/types/categories";
+import { useDeleteProduct, useProducts } from "@/hooks/use-products";
+import type { Product } from "@/types/products";
+import { productColumns } from "./columns";
 import {
-  CategoryFormSheet,
-  type CategoryFormTarget,
-} from "./category-form-sheet";
-import { categoryColumns } from "./columns";
+  ProductFormSheet,
+  type ProductFormTarget,
+} from "./product-form-sheet";
 
-export function CategoriesTable() {
+export function ProductsTable() {
   // `open` sengaja dipisah dari `target`, bukan `target !== null`. Radix
   // menganimasikan sheet saat menutup; kalau target ikut dikosongkan, judul
-  // dan label tombolnya berkedip dari "Ubah kategori" ke "Tambah kategori"
-  // selama animasi itu. Dibiarkan begini, target baru ditimpa saat sheet
-  // dibuka lagi.
+  // dan label tombolnya berkedip dari "Ubah produk" ke "Tambah produk" selama
+  // animasi itu. Dibiarkan begini, target baru ditimpa saat sheet dibuka lagi.
   const [formOpen, setFormOpen] = useState(false);
-  const [formTarget, setFormTarget] = useState<CategoryFormTarget>({
+  const [formTarget, setFormTarget] = useState<ProductFormTarget>({
     mode: "tambah",
   });
 
   // Baris yang sedang dikonfirmasi hapus. Yang disimpan barisnya, bukan id-nya,
-  // supaya dialog bisa menyebut namanya tanpa mencari ulang ke daftar.
-  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  // supaya dialog bisa menyebut nama produknya tanpa mencari ulang ke daftar.
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
-  const { data, isPending, isError, error } = useCategories();
-  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory({
+  const { data, isPending, isError, error } = useProducts();
+  const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct({
     onSuccess: () => setDeleteTarget(null),
   });
 
@@ -40,12 +39,12 @@ export function CategoriesTable() {
     setFormOpen(true);
   };
 
-  const openUbah = (category: Category) => {
-    setFormTarget({ mode: "ubah", category });
+  const openUbah = (product: Product) => {
+    setFormTarget({ mode: "ubah", product });
     setFormOpen(true);
   };
 
-  const columns = categoryColumns({
+  const columns = productColumns({
     onRequestEdit: openUbah,
     onRequestDelete: setDeleteTarget,
     isBusy: isDeleting,
@@ -53,11 +52,11 @@ export function CategoriesTable() {
 
   return (
     <>
-      <DataTableCard<Category>
-        title="Daftar kategori"
+      <DataTableCard<Product>
+        title="Daftar produk"
         headerAction={
           <Button type="button" size="sm" onClick={openTambah}>
-            Tambah kategori
+            Tambah produk
           </Button>
         }
         columns={columns}
@@ -65,35 +64,32 @@ export function CategoriesTable() {
         rowKey={(row) => row.id}
         // Card tetap terpasang di ketiga keadaan supaya layout tidak melompat.
         emptyMessage={
-          isPending ? "Memuat…" : isError ? error.message : "Belum ada kategori."
+          isPending ? "Memuat…" : isError ? error.message : "Belum ada produk."
         }
       />
 
       {/* Di luar DataTableCard: komponen itu bukan client component dan
           sengaja tidak tahu apa-apa soal aksi. */}
-      <CategoryFormSheet
+      <ProductFormSheet
         target={formTarget}
         open={formOpen}
         onOpenChange={setFormOpen}
       />
 
-      {/* Naskahnya beda dari produk: kategori tidak meruntuhkan apa pun.
-          `products.category_id` memakai `on delete restrict`, jadi yang masih
-          terpakai ditolak database, bukan ikut terhapus. */}
       <ConfirmDeleteDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
-        title="Hapus kategori?"
+        title="Hapus produk?"
         description={
           <>
-            Kategori &quot;{deleteTarget?.nama}&quot; akan dihapus. Kalau masih
-            dipakai produk, database akan menolaknya.
+            Produk &quot;{deleteTarget?.nama}&quot; dan seluruh variannya ikut
+            terhapus. Tindakan ini tidak bisa dibatalkan.
           </>
         }
         onConfirm={() => {
-          if (deleteTarget) deleteCategory(deleteTarget.id);
+          if (deleteTarget) deleteProduct(deleteTarget.id);
         }}
         isPending={isDeleting}
       />

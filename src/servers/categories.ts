@@ -27,6 +27,23 @@ function errorMessage(code: string | undefined, fallback: string) {
 }
 
 /**
+ * Pesan pertama dari kegagalan zod; dipakai `createKategori` dan
+ * `updateKategori`.
+ *
+ * Tipenya diikat ke `CategoryInput`, bukan dibikin generik: `fieldErrors`
+ * adalah mapped type atas kunci skemanya, dan dengan parameter tipe yang belum
+ * terpecahkan `Object.values` menyerah jadi `{}[]` — pesannya lalu gagal
+ * dianggap string.
+ */
+function validationMessage(error: z.ZodError<CategoryInput>) {
+  const { fieldErrors } = z.flattenError(error);
+
+  return (
+    Object.values(fieldErrors).flat().at(0) ?? "Periksa kembali isian kamu."
+  );
+}
+
+/**
  * File ini khusus operasi TULIS. Pembacaan ada di `@/clients/categories`,
  * lewat browser client, supaya tidak kena antrean Server Action.
  *
@@ -42,13 +59,7 @@ export async function createKategori(
   const parsed = categorySchema.safeParse(input);
 
   if (!parsed.success) {
-    const { fieldErrors } = z.flattenError(parsed.error);
-    const firstError = Object.values(fieldErrors).flat().at(0);
-
-    return {
-      success: false,
-      message: firstError ?? "Periksa kembali isian kamu.",
-    };
+    return { success: false, message: validationMessage(parsed.error) };
   }
 
   const supabase = await createClient();
@@ -64,6 +75,39 @@ export async function createKategori(
   return {
     success: true,
     message: `Kategori "${parsed.data.nama}" ditambahkan.`,
+  };
+}
+
+/**
+ * Menyimpan ulang nama yang sama persis tidak melanggar `categories_nama_uniq`
+ * — Postgres tidak menganggap baris bentrok dengan dirinya sendiri.
+ */
+export async function updateKategori(
+  id: string,
+  input: CategoryInput,
+): Promise<CategoryActionResult> {
+  const parsed = categorySchema.safeParse(input);
+
+  if (!parsed.success) {
+    return { success: false, message: validationMessage(parsed.error) };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("categories")
+    .update(parsed.data)
+    .eq("id", id);
+
+  if (error) {
+    return {
+      success: false,
+      message: errorMessage(error.code, `Gagal menyimpan: ${error.message}`),
+    };
+  }
+
+  return {
+    success: true,
+    message: `Kategori "${parsed.data.nama}" diperbarui.`,
   };
 }
 

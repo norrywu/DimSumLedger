@@ -5,7 +5,11 @@ import { toast } from "sonner";
 
 import { getCategories } from "@/clients/categories";
 import { CATEGORIES_KEY } from "@/constants/categories-constant";
-import { createKategori, deleteKategori } from "@/servers/categories";
+import {
+  createKategori,
+  deleteKategori,
+  updateKategori,
+} from "@/servers/categories";
 import type { CategoryActionResult } from "@/types/categories";
 import type { CategoryInput } from "@/validations/categories-validation";
 
@@ -44,6 +48,25 @@ export function useCreateCategory(options?: MutationOptions) {
       toast.success(result.message);
       // Menandai cache basi; react-query fetch ulang selama masih ada komponen
       // yang memakai key ini.
+      queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY });
+      options?.onSuccess?.();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+export function useUpdateCategory(options?: MutationOptions) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    // Satu objek, bukan dua argumen: `mutate` milik react-query cuma menerima
+    // satu variabel.
+    mutationFn: async ({ id, input }: { id: string; input: CategoryInput }) =>
+      unwrap(await updateKategori(id, input)),
+    onSuccess: (result) => {
+      toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY });
       options?.onSuccess?.();
     },

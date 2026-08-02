@@ -4,7 +4,7 @@ import { PencilIcon, Trash2Icon } from "lucide-react";
 
 import type { DataTableColumn } from "@/components/common/data-table-card";
 import { IconActionButton } from "@/components/common/icon-action-button";
-import type { Category } from "@/types/categories";
+import type { Product } from "@/types/products";
 
 /**
  * Fungsi, bukan konstanta, karena kolom Aksi butuh handler dan status pending
@@ -15,15 +15,15 @@ import type { Category } from "@/types/categories";
  * bukan tombol ini melainkan sheet dan dialog konfirmasi — dan keduanya butuh
  * isi barisnya, bukan cuma penunjuknya.
  */
-export function categoryColumns({
+export function productColumns({
   onRequestEdit,
   onRequestDelete,
   isBusy,
 }: {
-  onRequestEdit: (category: Category) => void;
-  onRequestDelete: (category: Category) => void;
+  onRequestEdit: (product: Product) => void;
+  onRequestDelete: (product: Product) => void;
   isBusy: boolean;
-}): DataTableColumn<Category>[] {
+}): DataTableColumn<Product>[] {
   return [
     {
       header: "Nama",
@@ -31,12 +31,17 @@ export function categoryColumns({
       render: (row) => row.nama,
     },
     {
+      header: "Kategori",
+      cellClassName: "text-muted-foreground",
+      render: (row) => row.kategori_nama,
+    },
+    {
       header: "Aksi",
       headClassName: "w-24 text-right",
       cellClassName: "text-right",
       render: (row) => (
         <div className="flex justify-end gap-1">
-          {/* Nama kategori ikut masuk label supaya pengguna screen reader tahu
+          {/* Nama produk ikut masuk label supaya pengguna screen reader tahu
               baris mana yang dituju, bukan "Ubah" berulang belasan kali. */}
           <IconActionButton
             label={`Ubah ${row.nama}`}

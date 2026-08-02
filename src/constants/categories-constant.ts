@@ -1,3 +1,4 @@
+import type { SheetField } from "@/components/sheet-trigger";
 import type { CategoryInput } from "@/validations/categories-validation";
 
 /**
@@ -9,11 +10,19 @@ import type { CategoryInput } from "@/validations/categories-validation";
 export const CATEGORIES_KEY = ["categories"];
 
 /**
- * Nilai awal form tambah kategori. Dipakai dua kali di `KategoriForm`: saat
- * `useForm` dibuat, dan saat `form.reset()` setelah simpan berhasil — jadi
- * keduanya dijamin memakai nilai yang sama.
+ * Nilai awal sheet kategori saat mode "tambah". `TriggerSheet` mereset form ke
+ * nilai ini tiap kali sheet dibuka, jadi tidak ada sisa isian dari kali
+ * sebelumnya.
  *
  * Bertipe `CategoryInput` supaya kalau nanti ada field baru di
  * `categorySchema`, TypeScript langsung menuntut nilai awalnya ikut ditambah.
  */
 export const CATEGORY_FORM_DEFAULTS: CategoryInput = { nama: "" };
+
+/**
+ * Isi sheet kategori. Konstanta seperti `PROFILE_FIELDS`, bukan fungsi seperti
+ * `productFields` — tidak ada opsi dropdown yang perlu menunggu data dimuat.
+ */
+export const CATEGORY_FIELDS: SheetField<CategoryInput>[] = [
+  { name: "nama", label: "Nama kategori", placeholder: "mis. Dimsum Kukus" },
+];

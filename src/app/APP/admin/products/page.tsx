@@ -1,3 +1,5 @@
+import { ProductsTable } from "./_components/products-table";
+
 export default function ProductsPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -8,11 +10,7 @@ export default function ProductsPage() {
           ada di varian, bukan di sini.
         </p>
       </div>
-      <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed">
-        <span className="text-sm text-muted-foreground">
-          Daftar produk belum dibuat.
-        </span>
-      </div>
+      <ProductsTable />
     </div>
   );
 }
