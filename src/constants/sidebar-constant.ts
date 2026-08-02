@@ -23,8 +23,8 @@ import type { NavItemsByRole } from "@/types/navigation";
  * `nav-main` merendernya sebagai teks di dalam SidebarMenuSub.
  *
  * Yang halamannya sudah ada: `/APP/admin/dashboard`, `/APP/admin/products`,
- * `/APP/admin/categories`, dan `/APP/admin/variants`. Sisanya kerangka dan
- * akan 404 sampai dibuat.
+ * `/APP/admin/categories`, `/APP/admin/variants`, dan `/APP/admin/packagings`.
+ * Sisanya kerangka dan akan 404 sampai dibuat.
  */
 export const navItems: NavItemsByRole = {
   admin: [
@@ -35,7 +35,13 @@ export const navItems: NavItemsByRole = {
       items: [
         { title: "Daftar Produk", url: "/APP/admin/products" },
         { title: "Varian", url: "/APP/admin/variants" },
+        // Kategori dan Kemasan sama-sama tabel master yang berdiri sendiri —
+        // bukan produk. Keduanya di grup ini karena "Produk" di sini berarti
+        // katalog beserta data pendukungnya, dan grup berisi satu tautan cuma
+        // menambah klik. Ditaruh paling bawah: grup ini mengalir dari yang
+        // paling sering dibuka ke yang jarang disentuh.
         { title: "Kategori", url: "/APP/admin/categories" },
+        { title: "Kemasan", url: "/APP/admin/packagings" },
       ],
     },
     {

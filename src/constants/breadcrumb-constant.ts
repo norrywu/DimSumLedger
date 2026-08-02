@@ -11,6 +11,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   products: "Produk",
   variants: "Varian",
   categories: "Kategori",
+  packagings: "Kemasan",
   users: "Pengguna",
   transactions: "Transaksi",
   order: "Pesanan",

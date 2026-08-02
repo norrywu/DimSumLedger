@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { currencyField } from "@/validations/shared-validation";
+
 /**
  * Sumber kebenaran validasi varian, dipakai `TriggerSheet` di browser dan
  * Server Action di server.
@@ -12,29 +14,12 @@ import { z } from "zod";
  * yang bentuknya sudah berbeda:
  *   1. di browser, atas isi form   — `harga_jual` masih string "15000"
  *   2. di Server Action, atas hasil parse pertama — sudah number 15000
- * Kalau helper angkanya cuma menerima string, `safeParse` di server akan
- * menolak kiriman yang dibuatnya sendiri. Karena itu keduanya diterima.
+ * `currencyField()` sudah menangani itu untuk field uang; `jumlah_pcs` di bawah menerima
+ * string, number, maupun null demi alasan yang sama.
  */
-
-/** Batas `numeric(12,2)`; disamakan dengan kolomnya, bukan angka karangan. */
-const MAX_UANG = 9_999_999_999.99;
 
 /** Batas `smallint`; lewat dari ini Postgres melempar 22003. */
 const MAX_SMALLINT = 32767;
-
-function uang(label: string) {
-  return z
-    .union([z.string().trim(), z.number()])
-    .refine((nilai) => nilai !== "", `${label} wajib diisi.`)
-    // Dibulatkan dua desimal di sini. Kalau tidak, Postgres yang membulatkan
-    // diam-diam dan nilai tersimpan beda dari yang diketik kasir.
-    .transform((nilai) => Math.round(Number(nilai) * 100) / 100)
-    // Number("abc") itu NaN, dan NaN lolos semua perbandingan di bawah —
-    // jadi disaring lebih dulu.
-    .refine(Number.isFinite, `${label} harus berupa angka.`)
-    .refine((angka) => angka >= 0, `${label} tidak boleh negatif.`)
-    .refine((angka) => angka <= MAX_UANG, `${label} terlalu besar.`);
-}
 
 export const variantSchema = z.object({
   // Nilai awalnya string kosong karena Radix Select belum tersentuh, jadi pesan
@@ -60,8 +45,8 @@ export const variantSchema = z.object({
         (Number.isInteger(angka) && angka > 0 && angka <= MAX_SMALLINT),
       `Jumlah pcs harus bilangan bulat 1–${MAX_SMALLINT}.`,
     ),
-  harga_jual: uang("Harga jual"),
-  modal_bahan: uang("Modal bahan"),
+  harga_jual: currencyField("Harga jual"),
+  modal_bahan: currencyField("Modal bahan"),
   aktif: z.boolean(),
 });
 
