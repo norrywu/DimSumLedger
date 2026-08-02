@@ -34,7 +34,13 @@ function errorMessage(
   code: string | undefined,
   pesanRelasi: string,
   fallback: string,
+  pesanDatabase?: string,
 ) {
+  // P0001 = RAISE EXCEPTION dari `public.simpan_varian`. Pesannya kita tulis
+  // sendiri di file SQL itu, dalam bahasa Indonesia, dan memang untuk dibaca
+  // pengguna — jadi diteruskan apa adanya. Harus dicek paling awal, kalau
+  // tidak "Varian wajib punya minimal satu kemasan." tertelan cabang fallback.
+  if (code === "P0001" && pesanDatabase) return pesanDatabase;
   if (code === "23505") return "Produk ini sudah punya varian bernama itu.";
   if (code === "23503") return pesanRelasi;
   if (code === "42501") return "Kamu tidak punya akses mengelola varian.";
@@ -72,14 +78,28 @@ const PESAN_PRODUK_HILANG =
  * Kegagalan dikembalikan sebagai nilai, bukan dilempar — lihat
  * `VariantActionResult` untuk alasannya. Pemanggil di sisi client yang
  * memutuskan mau melempar atau tidak.
+ *
+ * Satu fungsi melayani tambah dan ubah (`id === null` berarti tambah), karena
+ * keduanya bermuara ke `public.simpan_varian` yang sama.
+ *
+ * Kenapa lewat RPC, bukan `.insert()`/`.update()` biasa: varian dan daftar
+ * kemasannya harus tersimpan ATOMIK. supabase-js tidak bisa membungkus dua
+ * penulisan jadi satu transaksi, jadi kalau dipisah selalu ada jeda di mana
+ * varian ada tanpa kemasan — dan varian seperti itu modal kemasannya terbaca 0
+ * sehingga marginnya menyesatkan. Rinciannya di
+ * `supabase/schemas/07_simpan_varian.sql`.
  */
-export async function createVarian(
+export async function simpanVarian(
+  id: string | null,
   input: VariantInput,
 ): Promise<VariantActionResult> {
   // zodResolver di dalam `TriggerSheet` sudah memvalidasi di browser, tapi
   // Server Action tetap bisa dijangkau lewat POST langsung — jadi jangan
   // percaya kiriman client. Aman diparse ulang meski angkanya sudah number:
   // `variantSchema` menerima string maupun number.
+  //
+  // Fungsi database menegakkan ulang aturan "minimal satu kemasan"; itu bukan
+  // alasan berhenti memvalidasi di sini, karena zod yang punya pesan per field.
   const parsed = variantSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -87,7 +107,26 @@ export async function createVarian(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("variants").insert(parsed.data);
+  const { error } = await supabase.rpc("simpan_varian", {
+    // Dua `as` di bawah menambal tipe hasil generate, bukan menyembunyikan
+    // kesalahan. Postgres tidak menyimpan informasi nullability untuk
+    // PARAMETER fungsi — sistem katalognya cuma mencatat tipe — jadi
+    // `supabase gen types` terpaksa memancarkan semuanya sebagai non-nullable.
+    // Padahal setiap parameter plpgsql menerima NULL, dan kedua ini memang
+    // dirancang begitu: `p_id` NULL berarti tambah baru, `p_jumlah_pcs` NULL
+    // berarti "jumlah pcs belum diketahui".
+    //
+    // Yang ditutupi cast ini persis satu hal — nullability — dan itu justru
+    // hal yang salah dicatat generator. Tipe selebihnya tetap diperiksa.
+    p_id: id as string,
+    p_jumlah_pcs: parsed.data.jumlah_pcs as number,
+    p_product_id: parsed.data.product_id,
+    p_nama: parsed.data.nama,
+    p_harga_jual: parsed.data.harga_jual,
+    p_modal_bahan: parsed.data.modal_bahan,
+    p_aktif: parsed.data.aktif,
+    p_kemasan: parsed.data.kemasan,
+  });
 
   if (error) {
     return {
@@ -96,51 +135,14 @@ export async function createVarian(
         error.code,
         PESAN_PRODUK_HILANG,
         `Gagal menyimpan: ${error.message}`,
+        error.message,
       ),
     };
   }
 
   return {
     success: true,
-    message: `Varian "${parsed.data.nama}" ditambahkan.`,
-  };
-}
-
-/**
- * Memperbarui varian, termasuk memindahkannya ke produk lain. Menyimpan ulang
- * nama yang sama persis tidak melanggar `unique (product_id, nama)` — Postgres
- * tidak menganggap baris bentrok dengan dirinya sendiri.
- */
-export async function updateVarian(
-  id: string,
-  input: VariantInput,
-): Promise<VariantActionResult> {
-  const parsed = variantSchema.safeParse(input);
-
-  if (!parsed.success) {
-    return { success: false, message: validationMessage(parsed.error) };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("variants")
-    .update(parsed.data)
-    .eq("id", id);
-
-  if (error) {
-    return {
-      success: false,
-      message: errorMessage(
-        error.code,
-        PESAN_PRODUK_HILANG,
-        `Gagal menyimpan: ${error.message}`,
-      ),
-    };
-  }
-
-  return {
-    success: true,
-    message: `Varian "${parsed.data.nama}" diperbarui.`,
+    message: `Varian "${parsed.data.nama}" ${id ? "diperbarui" : "ditambahkan"}.`,
   };
 }
 

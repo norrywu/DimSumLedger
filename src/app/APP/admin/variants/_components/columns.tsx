@@ -53,10 +53,25 @@ export function variantColumns({
       render: (row) => formatCurrency(row.harga_jual),
     },
     {
-      header: "Modal bahan",
+      // Modal TOTAL, bukan modal bahan saja: modal bahan sendirian menyesatkan
+      // karena kemasan belum ikut terhitung. Rinciannya tetap terlihat di
+      // sheet ubah.
+      header: "Modal",
       headClassName: "text-right",
       cellClassName: "text-right tabular-nums text-muted-foreground",
-      render: (row) => formatCurrency(row.modal_bahan),
+      render: (row) => formatCurrency(row.modal_total),
+    },
+    {
+      // Angka yang paling dicari pemilik. Margin negatif berarti dijual di
+      // bawah modal — harus langsung kelihatan, bukan perlu dihitung sendiri.
+      header: "Margin",
+      headClassName: "text-right",
+      cellClassName: "text-right tabular-nums",
+      render: (row) => (
+        <span className={row.margin < 0 ? "text-destructive" : undefined}>
+          {formatCurrency(row.margin)}
+        </span>
+      ),
     },
     {
       header: "Status",

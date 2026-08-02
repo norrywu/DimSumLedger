@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, type ComponentProps } from "react";
+import { useEffect, type ComponentProps, type ReactNode } from "react";
 import {
   useForm,
   type DefaultValues,
   type FieldValues,
   type Path,
   type Resolver,
+  type UseFormReturn,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
@@ -61,6 +62,7 @@ export function TriggerSheet<
   onSubmit,
   submitLabel = "Save changes",
   isPending,
+  children,
 }: {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -73,6 +75,16 @@ export function TriggerSheet<
   onSubmit?: (data: TOut) => void;
   submitLabel?: string;
   isPending?: boolean;
+  /**
+   * Isian yang tidak bisa dinyatakan sebagai `SheetField` — mis. baris
+   * berulang seperti daftar kemasan varian, yang butuh `useFieldArray`.
+   * Dirender setelah `fields`.
+   *
+   * Render-prop, bukan `ReactNode` biasa, karena isinya butuh `form.control`
+   * dan form-nya baru ada di dalam komponen ini. Opsional, jadi form yang
+   * seluruh isiannya datar tidak perlu tahu prop ini ada.
+   */
+  children?: (form: UseFormReturn<TIn, unknown, TOut>) => ReactNode;
 }) {
   // Parameter ketiga `useForm` adalah tipe hasil transform; itu yang bikin
   // `handleSubmit` menyerahkan angka ke `onSubmit`, bukan string mentah.
@@ -104,7 +116,10 @@ export function TriggerSheet<
             <SheetTitle>{sheetTitle}</SheetTitle>
             <SheetDescription>{sheetDescription}</SheetDescription>
           </SheetHeader>
-          <div className="grid gap-4 px-4 py-6">
+          {/* flex-1 + overflow-y-auto: sejak `children` bisa berisi baris
+              berulang, isian bisa lebih tinggi dari layar. Tanpa ini tombol
+              Simpan terdorong keluar dan tidak bisa diraih. */}
+          <div className="grid flex-1 content-start gap-4 overflow-y-auto px-4 py-6">
             {fields.map((field) => (
               <FormField
                 key={field.name}
@@ -117,6 +132,7 @@ export function TriggerSheet<
                 options={field.options}
               />
             ))}
+            {children?.(form)}
           </div>
           <SheetFooter>
             <Button type="submit" disabled={isPending}>

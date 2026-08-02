@@ -48,6 +48,27 @@ export const variantSchema = z.object({
   harga_jual: currencyField("Harga jual"),
   modal_bahan: currencyField("Modal bahan"),
   aktif: z.boolean(),
+  // Varian tanpa kemasan bukan barang yang bisa dijual — dan lebih buruk lagi,
+  // modal kemasannya terbaca 0 sehingga marginnya tampak lebih besar dari yang
+  // sebenarnya. Aturan yang sama ditegakkan ulang di `public.simpan_varian`;
+  // yang di sini supaya pengguna tahu sebelum menekan Simpan.
+  kemasan: z
+    .array(
+      z.object({
+        packaging_id: z.uuid("Kemasan wajib dipilih."),
+        // Menerima string maupun number demi alasan yang sama seperti
+        // `jumlah_pcs` di atas.
+        jumlah: z
+          .union([z.string().trim(), z.number()])
+          .transform(Number)
+          .refine(
+            (angka) =>
+              Number.isInteger(angka) && angka > 0 && angka <= MAX_SMALLINT,
+            `Jumlah kemasan harus bilangan bulat 1–${MAX_SMALLINT}.`,
+          ),
+      }),
+    )
+    .min(1, "Varian wajib punya minimal satu kemasan."),
 });
 
 /** Nilai yang dipegang form — angka masih string karena datang dari `<Input>`. */

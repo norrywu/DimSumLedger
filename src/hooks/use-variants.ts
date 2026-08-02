@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { getVariants } from "@/clients/variants";
 import { VARIANTS_KEY } from "@/constants/variants-constant";
-import { createVarian, deleteVarian, updateVarian } from "@/servers/variants";
+import { deleteVarian, simpanVarian } from "@/servers/variants";
 import type { VariantActionResult } from "@/types/variants";
 import type { VariantInput } from "@/validations/variants-validation";
 
@@ -38,12 +38,16 @@ export function useVariants() {
  * Yang masuk mutation adalah `VariantInput` (hasil validasi, angkanya sudah
  * number), bukan `VariantFormValues` yang masih string. `handleSubmit` milik
  * react-hook-form yang mengonversinya, lewat generic ketiga di `TriggerSheet`.
+ *
+ * Tetap dua hook meski keduanya memanggil `simpanVarian` yang sama — yang
+ * membedakan cuma `id` dan kalimat toast-nya.
  */
 export function useCreateVariant(options?: MutationOptions) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: VariantInput) => unwrap(await createVarian(input)),
+    mutationFn: async (input: VariantInput) =>
+      unwrap(await simpanVarian(null, input)),
     onSuccess: (result) => {
       toast.success(result.message);
       // Cukup VARIANTS_KEY: daftar produk tidak ikut berubah saat varian baru
@@ -64,7 +68,7 @@ export function useUpdateVariant(options?: MutationOptions) {
     // Satu objek, bukan dua argumen: `mutate` milik react-query cuma menerima
     // satu variabel.
     mutationFn: async ({ id, input }: { id: string; input: VariantInput }) =>
-      unwrap(await updateVarian(id, input)),
+      unwrap(await simpanVarian(id, input)),
     onSuccess: (result) => {
       toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: VARIANTS_KEY });

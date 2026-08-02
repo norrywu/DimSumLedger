@@ -19,6 +19,29 @@ export type Variant = Pick<
 > & {
   /** Diratakan dari embed `products(nama)`; lihat `getVariants`. */
   produk_nama: string;
+  /**
+   * Kemasan yang dipakai varian ini, diratakan dari embed
+   * `variant_packagings(… packagings(…))`. Selalu berisi minimal satu —
+   * dijamin `public.simpan_varian`, bukan cuma oleh form.
+   *
+   * `harga_satuan` ikut dibawa supaya sheet ubah bisa menghitung ulang modal
+   * secara langsung tanpa query kedua.
+   */
+  kemasan: VariantPackaging[];
+  /** Σ(harga_satuan × jumlah). Dihitung, TIDAK disimpan — lihat `getVariants`. */
+  modal_kemasan: number;
+  /** `modal_bahan + modal_kemasan`. */
+  modal_total: number;
+  /** `harga_jual − modal_total`. Negatif berarti dijual di bawah modal. */
+  margin: number;
+};
+
+/** Satu baris `variant_packagings` yang sudah digabung dengan master kemasannya. */
+export type VariantPackaging = {
+  packaging_id: string;
+  nama: string;
+  harga_satuan: number;
+  jumlah: number;
 };
 
 /**

@@ -34,6 +34,10 @@ export const VARIANT_FORM_DEFAULTS: VariantFormValues = {
   harga_jual: "",
   modal_bahan: "",
   aktif: true,
+  // Mulai kosong meski skemanya menuntut minimal satu. Menebak kemasan mana
+  // yang dimaksud pengguna lebih buruk daripada membiarkannya memilih sendiri;
+  // pesan "wajib minimal satu kemasan" muncul saat Simpan ditekan.
+  kemasan: [],
 };
 
 /**
