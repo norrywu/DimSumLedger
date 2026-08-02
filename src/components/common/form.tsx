@@ -24,9 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import type { FormFieldProps } from '@/types/form'
 
-export function FormField<T extends FieldValues = FieldValues>({
+export function FormField<
+  T extends FieldValues = FieldValues,
+  TTransformed = T,
+>({
   control,
   name,
   label,
@@ -34,7 +38,7 @@ export function FormField<T extends FieldValues = FieldValues>({
   placeholder,
   autoComplete,
   options,
-}: FormFieldProps<T>) {
+}: FormFieldProps<T, TTransformed>) {
   return (
     <Controller
       name={name}
@@ -47,9 +51,25 @@ export function FormField<T extends FieldValues = FieldValues>({
             : undefined
 
         return (
-          <Field data-invalid={fieldState.invalid}>
+          <Field
+            data-invalid={fieldState.invalid}
+            // Switch itu kontrol sebaris: label di kiri, tuasnya di kanan.
+            // Tanpa ini ia jatuh ke baris bawah dan melar selebar sheet.
+            orientation={type === 'switch' ? 'horizontal' : 'vertical'}
+          >
             <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-            {type === 'select' ? (
+            {type === 'switch' ? (
+              <Switch
+                id={field.name}
+                // Radix Switch itu controlled lewat `checked`, bukan `value`;
+                // {...field} tidak bisa disebar begitu saja seperti ke Input.
+                checked={field.value ?? false}
+                onCheckedChange={field.onChange}
+                onBlur={field.onBlur}
+                ref={field.ref}
+                aria-invalid={fieldState.invalid}
+              />
+            ) : type === 'select' ? (
               <Select
                 value={field.value ?? ''}
                 onValueChange={field.onChange}

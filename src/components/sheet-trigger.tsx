@@ -28,14 +28,29 @@ import type { SelectOption } from "@/types/form";
 export type SheetField<T extends FieldValues> = {
   name: Path<T>;
   label: string;
-  type?: ComponentProps<typeof Input>["type"] | "select";
+  type?: ComponentProps<typeof Input>["type"] | "select" | "switch";
   placeholder?: string;
   autoComplete?: string;
   /** Pilihan dropdown; hanya dipakai bila type === "select". */
   options?: SelectOption[];
 };
 
-export function TriggerSheet<T extends FieldValues>({
+/**
+ * Dua parameter tipe, bukan satu, karena nilai yang DIPEGANG form belum tentu
+ * sama dengan nilai yang KELUAR dari validasi. `<Input type="number">` selalu
+ * mengembalikan string, sedangkan yang dikirim ke database harus number — jadi
+ * skema seperti `variantSchema` mengubah tipenya di tengah jalan.
+ *
+ * - `TIn`  — isi form apa adanya; ini yang dipakai `defaultValues` dan `fields`.
+ * - `TOut` — hasil zod setelah transform; ini yang diterima `onSubmit`.
+ *
+ * `TOut` default ke `TIn` supaya form yang tidak mengubah tipe (kategori,
+ * produk) cukup menulis satu parameter seperti sebelumnya.
+ */
+export function TriggerSheet<
+  TIn extends FieldValues,
+  TOut extends FieldValues = TIn,
+>({
   open,
   onOpenChange,
   fields,
@@ -49,17 +64,20 @@ export function TriggerSheet<T extends FieldValues>({
 }: {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  fields: SheetField<T>[];
+  fields: SheetField<TIn>[];
   sheetTitle: string;
   sheetDescription?: string;
-  defaultValues: DefaultValues<T>;
-  schema: ZodType<T>;
-  onSubmit?: (data: T) => void;
+  defaultValues: DefaultValues<TIn>;
+  /** Urutan generic zod v4 adalah <Output, Input> — bukan kebalikannya. */
+  schema: ZodType<TOut, TIn>;
+  onSubmit?: (data: TOut) => void;
   submitLabel?: string;
   isPending?: boolean;
 }) {
-  const form = useForm<T>({
-    resolver: zodResolver(schema as never) as Resolver<T>,
+  // Parameter ketiga `useForm` adalah tipe hasil transform; itu yang bikin
+  // `handleSubmit` menyerahkan angka ke `onSubmit`, bukan string mentah.
+  const form = useForm<TIn, unknown, TOut>({
+    resolver: zodResolver(schema as never) as Resolver<TIn, unknown, TOut>,
     defaultValues,
   });
 

@@ -1,3 +1,5 @@
+import { VariantsTable } from "./_components/variants-table";
+
 export default function VariantsPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -8,11 +10,7 @@ export default function VariantsPage() {
           kemasan.
         </p>
       </div>
-      <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed">
-        <span className="text-sm text-muted-foreground">
-          Daftar varian belum dibuat.
-        </span>
-      </div>
+      <VariantsTable />
     </div>
   );
 }

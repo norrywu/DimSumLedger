@@ -8,11 +8,17 @@ export type SelectOption<T extends string = string> = {
   label: string;
 };
 
-export type FormFieldProps<T extends FieldValues> = {
-  control: Control<T>;
+/**
+ * `TTransformed` ikut dibawa karena `useForm` boleh mengeluarkan tipe yang
+ * berbeda dari isi form-nya (lihat `TriggerSheet`). Tanpa parameter ini,
+ * `control` dari form yang bertransform ditolak TypeScript. Default-nya sama
+ * dengan `T`, jadi pemakai biasa cukup menulis satu parameter.
+ */
+export type FormFieldProps<T extends FieldValues, TTransformed = T> = {
+  control: Control<T, unknown, TTransformed>;
   name: Path<T>;
   label: string | ReactNode;
-  type?: ComponentProps<typeof Input>["type"] | "select";
+  type?: ComponentProps<typeof Input>["type"] | "select" | "switch";
   placeholder?: string;
   autoComplete?: string;
   /** Pilihan dropdown; hanya dipakai bila type === 'select'. */
