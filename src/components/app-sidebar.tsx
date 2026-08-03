@@ -26,8 +26,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Selector atomik — mengembalikan seluruh state akan memicu re-render pada
   // setiap perubahan store.
   const user = useAuthStore((state) => state.user);
-  // Role yang tidak dikenal jatuh ke menu kasir, bukan menu admin.
-  const menu = user?.role === "admin" ? navItems.admin : navItems.cashier;
+  // Role yang belum terisi jatuh ke menu kasir, yang paling sedikit haknya.
+  // `navItems` bertipe `Record<UserRole, …>`, jadi role apa pun yang sah pasti
+  // punya menunya sendiri — termasuk `owner`, yang berbagi menu dengan admin.
+  const menu = user?.role ? navItems[user.role] : navItems.cashier;
 
   return (
     <Sidebar variant="inset" {...props}>

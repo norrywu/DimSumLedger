@@ -1,4 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -15,6 +17,19 @@ export function formatCurrency(value: number) {
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+/**
+ * Timestamp dari database untuk ditampilkan di tabel.
+ *
+ * `null` jadi em dash, bukan tanggal epoch: kolom seperti `last_sign_in_at`
+ * kosong artinya "belum pernah", dan "1 Jan 1970" terbaca seolah itu kejadian
+ * sungguhan.
+ */
+export function formatDateTime(value: string | null | undefined) {
+  if (!value) return "—";
+
+  return format(new Date(value), "d MMM yyyy, HH:mm", { locale: idLocale });
 }
 
 export function getInitials(name: string | null | undefined) {

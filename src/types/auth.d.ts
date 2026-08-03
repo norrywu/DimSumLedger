@@ -10,7 +10,7 @@ export type LoginState = {
  * `role: string`. Jaga tetap selaras dengan
  * `supabase/schemas/000_profile.sql`.
  */
-export type UserRole = "admin" | "cashier";
+export type UserRole = "owner" | "admin" | "cashier";
 
 /**
  * Hanya service role yang bisa menulisnya (lewat trigger
