@@ -13,7 +13,11 @@ function errorMessage(code: string | undefined, fallback: string) {
   if (code === "23505") return "Nama extra itu sudah dipakai.";
   if (code === "23503") return "Extra ini masih dipakai transaksi.";
   if (code === "42501") return "Kamu tidak punya akses mengelola extra.";
-  if (code === "22003") return "Nilai harga terlalu besar.";
+  if (code === "23514")
+    return "Tambahan harga, modal, atau nama extra tidak valid.";
+
+  if (code === "22003") return "Nilai tambahan harga atau modal terlalu besar.";
+
   return fallback;
 }
 

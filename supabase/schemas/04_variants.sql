@@ -1,23 +1,31 @@
 
-
 create table public.variants (
   id          uuid          primary key default gen_random_uuid(),
+
   product_id  uuid          not null references public.products (id) on delete cascade,
   nama        text          not null,
-  -- NULL = jumlah pcs belum diketahui.
+
   jumlah_pcs  smallint      check (jumlah_pcs > 0),
   harga_jual  numeric(12,2) not null default 0 check (harga_jual >= 0),
-  -- Modal isi/adonan saja. Modal kemasan dihitung dari variant_packagings.
+
   modal_bahan numeric(12,2) not null default 0 check (modal_bahan >= 0),
   aktif       boolean       not null default true,
   created_at  timestamptz   not null default now(),
 
-  unique (product_id, nama)
+ 
+  constraint variants_harga_aktif_check
+    check (not aktif or harga_jual > 0),
+
+
+  constraint variants_nama_check
+    check (nama = btrim(nama) and length(nama) between 1 and 50)
 );
 
-create index variants_product_idx on public.variants (product_id, nama);
 
--- --- Keamanan -----------------------------------------------
+create unique index variants_product_nama_uniq
+  on public.variants (product_id, lower(nama));
+
+
 alter table public.variants enable row level security;
 
 create policy "pengelola_akses_penuh" on public.variants

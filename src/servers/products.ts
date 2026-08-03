@@ -4,10 +4,7 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import type { ProductActionResult } from "@/types/products";
-import {
-  ProductInput,
-  productSchema,
-} from "@/validations/products-validation";
+import { ProductInput, productSchema } from "@/validations/products-validation";
 
 /**
  * Menerjemahkan kode error Postgres jadi kalimat yang bisa dibaca kasir.
@@ -28,9 +25,12 @@ function errorMessage(
   pesanRelasi: string,
   fallback: string,
 ) {
-  if (code === "23505") return "Nama produk itu sudah dipakai.";
+  if (code === "23514")
+    return "Nama produk tidak boleh kosong, berspasi di ujung, atau lebih dari 50 karakter.";
+
   if (code === "23503") return pesanRelasi;
   if (code === "42501") return "Kamu tidak punya akses mengelola produk.";
+
   return fallback;
 }
 

@@ -51,12 +51,13 @@ export function ModifierFormSheet({
       onOpenChange={onOpenChange}
       fields={MODIFIER_FIELDS}
       sheetTitle={isUbah ? "Ubah extra" : "Tambah extra"}
-      sheetDescription="Harga extra ditambahkan ke item saat kasir memilihnya. Nama tidak boleh kembar, tanpa memandang besar-kecil huruf."
+      sheetDescription="Tambahan harga masuk ke total item, tambahan modal masuk ke HPP-nya — dua-duanya dibekukan ke struk saat transaksi disimpan. Nama tidak boleh kembar, tanpa memandang besar-kecil huruf."
       defaultValues={
         target.mode === "ubah"
           ? {
               nama: target.modifier.nama,
-              price: target.modifier.price.toString(),
+              tambahan_harga: target.modifier.tambahan_harga.toString(),
+              tambahan_modal: target.modifier.tambahan_modal.toString(),
             }
           : MODIFIER_FORM_DEFAULTS
       }

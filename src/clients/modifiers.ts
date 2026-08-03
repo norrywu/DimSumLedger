@@ -6,7 +6,7 @@ export async function getModifiers(): Promise<Modifier[]> {
 
   const { data, error } = await supabase
     .from("modifiers")
-    .select("id, nama, price")
+    .select("id, nama, tambahan_harga, tambahan_modal")
     .order("nama");
 
   if (error) {

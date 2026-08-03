@@ -5,15 +5,22 @@ export const MODIFIERS_KEY = ["modifiers"];
 
 export const MODIFIER_FORM_DEFAULTS: ModifierFormValues = {
   nama: "",
-  price: "",
+  tambahan_harga: "",
+  tambahan_modal: "",
 };
 
 export const MODIFIER_FIELDS: SheetField<ModifierFormValues>[] = [
-  { name: "nama", label: "Nama extra", placeholder: "mis. Saus Extra" },
+  { name: "nama", label: "Nama extra", placeholder: "mis. Chili Oil" },
   {
-    name: "price",
-    label: "Harga",
+    name: "tambahan_harga",
+    label: "Tambahan harga",
     type: "number",
-    placeholder: "mis. 2000",
+    placeholder: "mis. 5000",
+  },
+  {
+    name: "tambahan_modal",
+    label: "Tambahan modal",
+    type: "number",
+    placeholder: "mis. 1200",
   },
 ];

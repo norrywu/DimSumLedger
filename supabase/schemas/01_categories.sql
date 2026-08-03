@@ -3,11 +3,15 @@
 create table public.categories (
   id         uuid        primary key default gen_random_uuid(),
   nama       text        not null,
-  created_at timestamptz not null default now()
-);
+  created_at timestamptz not null default now(),
 
--- Nama kategori unik tanpa peduli besar-kecil huruf ("Minuman" = "minuman").
--- Sekaligus melayani pengurutan per nama, jadi tidak perlu index terpisah.
+  -- `nama = btrim(nama)` bukan sekadar kerapian: tanpa itu ' Minuman ' dan
+  -- 'Minuman' tersimpan sebagai dua baris berbeda, dan `categories_nama_uniq`
+  -- yang memakai lower(nama) bisa dikelabui spasi di ujung. Batas 50
+  -- menyamakan dengan `categorySchema`.
+  constraint categories_nama_check
+    check (nama = btrim(nama) and length(nama) between 1 and 50)
+);
 create unique index categories_nama_uniq on public.categories (lower(nama));
 
 -- --- Keamanan -----------------------------------------------

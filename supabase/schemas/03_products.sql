@@ -4,8 +4,12 @@ create table public.products (
   id          uuid        primary key default gen_random_uuid(),
   category_id uuid        not null references public.categories (id) on delete restrict,
   nama        text        not null,
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+
+  constraint products_nama_check
+    check (nama = btrim(nama) and length(nama) between 1 and 50)
 );
+
 
 create unique index products_nama_uniq on public.products (lower(nama));
 

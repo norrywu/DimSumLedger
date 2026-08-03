@@ -23,12 +23,32 @@ export function modifierColumns({
       render: (row) => row.nama,
     },
     {
-      header: "Harga",
-
+      header: "Tambahan harga",
       headClassName: "text-right",
       cellClassName: "text-right tabular-nums",
-      render: (row) => formatCurrency(row.price),
+      render: (row) => formatCurrency(row.tambahan_harga),
     },
+    {
+      header: "Tambahan modal",
+      headClassName: "text-right",
+      cellClassName: "text-right tabular-nums text-muted-foreground",
+      render: (row) => formatCurrency(row.tambahan_modal),
+    },
+    {
+      header: "Margin",
+      headClassName: "text-right",
+      cellClassName: "text-right tabular-nums",
+      render: (row) => {
+        const margin = row.tambahan_harga - row.tambahan_modal;
+
+        return (
+          <span className={margin < 0 ? "text-destructive" : undefined}>
+            {formatCurrency(margin)}
+          </span>
+        );
+      },
+    },
+
     {
       header: "Aksi",
       headClassName: "w-24 text-right",

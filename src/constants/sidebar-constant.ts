@@ -42,10 +42,7 @@ export const navItems: NavItemsByRole = {
     {
       title: "Transaksi",
       icon: Receipt,
-      items: [
-        { title: "Riwayat", url: "/APP/cashier/transactions" },
-        { title: "Shift Saya", url: "/APP/cashier/shifts" },
-      ],
+      items: [{ title: "Riwayat", url: "/APP/cashier/transactions" }],
     },
   ],
 };

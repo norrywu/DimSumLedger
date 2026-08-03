@@ -8,8 +8,8 @@ export const modifierSchema = z.object({
     .trim()
     .min(1, "Nama extra wajib diisi.")
     .max(50, "Nama extra maksimal 50 karakter."),
-
-  price: currencyField("Harga extra"),
+  tambahan_harga: currencyField("Tambahan harga"),
+  tambahan_modal: currencyField("Tambahan modal"),
 });
 
 export type ModifierFormValues = z.input<typeof modifierSchema>;

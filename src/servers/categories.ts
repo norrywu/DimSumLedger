@@ -21,6 +21,8 @@ import {
  */
 function errorMessage(code: string | undefined, fallback: string) {
   if (code === "23505") return "Nama kategori itu sudah dipakai.";
+  if (code === "23514")
+    return "Nama kategori tidak boleh kosong, berspasi di ujung, atau lebih dari 50 karakter.";
   if (code === "23503") return "Kategori ini masih dipakai produk lain.";
   if (code === "42501") return "Kamu tidak punya akses mengubah kategori.";
   return fallback;
