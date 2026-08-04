@@ -1,6 +1,9 @@
-drop function if exists public.simpan_transaksi(jsonb, jsonb);
+-- Tanda tangan berubah dari (jsonb) ke (jsonb, numeric). `create or replace`
+-- hanya menimpa tanda tangan yang sama persis, jadi versi lama harus dibuang
+-- manual — kalau tidak, PostgREST bingung memilih di antara dua overload.
+drop function if exists public.simpan_transaksi(jsonb);
 
-create or replace function public.simpan_transaksi(p_items jsonb)
+create or replace function public.simpan_transaksi(p_items jsonb, p_dibayar numeric)
 returns uuid
 language plpgsql
 security definer
@@ -94,13 +97,20 @@ begin
     v_total := v_total + (v_varian.harga_jual + v_tambahan) * v_qty;
   end loop;
 
+  -- Dicek di sini, bukan diserahkan ke `transaksi_bayar_check`, supaya kasir
+  -- dapat pesan berisi angkanya — bukan sekadar constraint violation.
+  if p_dibayar is null or p_dibayar < v_total then
+    raise exception 'Uang yang dibayarkan kurang. Total %, dibayar %.',
+      v_total, coalesce(p_dibayar, 0);
+  end if;
+
   update public.transaksi
-     set total = v_total
+     set total = v_total, dibayar = p_dibayar
    where id = v_transaksi_id;
 
   return v_transaksi_id;
 end;
 $$;
 
-revoke execute on function public.simpan_transaksi(jsonb) from public, anon;
-grant execute on function public.simpan_transaksi(jsonb) to authenticated;
+revoke execute on function public.simpan_transaksi(jsonb, numeric) from public, anon;
+grant execute on function public.simpan_transaksi(jsonb, numeric) to authenticated;

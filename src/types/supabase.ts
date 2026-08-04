@@ -161,6 +161,7 @@ export type Database = {
         Row: {
           created_at: string
           dibatalkan_at: string | null
+          dibayar: number
           id: string
           kasir_id: string | null
           kasir_nama: string
@@ -170,6 +171,7 @@ export type Database = {
         Insert: {
           created_at?: string
           dibatalkan_at?: string | null
+          dibayar?: number
           id?: string
           kasir_id?: string | null
           kasir_nama: string
@@ -179,6 +181,7 @@ export type Database = {
         Update: {
           created_at?: string
           dibatalkan_at?: string | null
+          dibayar?: number
           id?: string
           kasir_id?: string | null
           kasir_nama?: string
@@ -561,7 +564,10 @@ export type Database = {
           role: string
         }[]
       }
-      simpan_transaksi: { Args: { p_items: Json }; Returns: string }
+      simpan_transaksi: {
+        Args: { p_dibayar: number; p_items: Json }
+        Returns: string
+      }
       simpan_varian: {
         Args: {
           p_aktif: boolean

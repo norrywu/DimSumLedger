@@ -5,13 +5,17 @@ create table public.transaksi (
  
   status        text          not null default 'selesai' check (status in ('selesai', 'dibatalkan')),
   total         numeric(12,2) not null check (total >= 0),
+  dibayar       numeric(12,2) not null default 0 check (dibayar >= 0),
   created_at    timestamptz   not null default now(),
   dibatalkan_at timestamptz,
 
   constraint transaksi_kasir_nama_check
     check (kasir_nama = btrim(kasir_nama) and length(kasir_nama) >= 1),
   constraint transaksi_batal_check
-    check ((status = 'dibatalkan') = (dibatalkan_at is not null))
+    check ((status = 'dibatalkan') = (dibatalkan_at is not null)),
+  -- Menjaga `kembalian` tidak pernah negatif tanpa perlu constraint terpisah.
+  constraint transaksi_bayar_check
+    check (dibayar >= total)
 );
 
 create index transaksi_created_idx on public.transaksi (created_at desc);

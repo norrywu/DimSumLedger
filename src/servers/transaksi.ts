@@ -41,6 +41,7 @@ export async function simpanTransaksi(
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("simpan_transaksi", {
     p_items: parsed.data.items,
+    p_dibayar: parsed.data.dibayar,
   });
 
   if (error) {

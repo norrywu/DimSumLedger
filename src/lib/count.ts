@@ -43,3 +43,17 @@ export function hitungKeranjang({
 
   return { total };
 }
+
+export function hitungKembalian({
+  total,
+  dibayar,
+}: {
+  total: number;
+  dibayar: number;
+}) {
+  return {
+    kembalian: Math.max(dibayar - total, 0),
+    kurang: Math.max(total - dibayar, 0),
+    cukup: dibayar >= total,
+  };
+}

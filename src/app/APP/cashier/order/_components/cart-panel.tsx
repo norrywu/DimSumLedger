@@ -5,8 +5,11 @@ import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { IconActionButton } from "@/components/common/icon-action-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { hitungKembalian, keAngka } from "@/lib/count";
 import { formatCurrency } from "@/lib/utils";
 import type { CartItem } from "@/types/cashier";
 
@@ -18,6 +21,8 @@ export function CartPanel({
   onSimpan,
   isPending,
   total,
+  dibayar,
+  onUbahDibayar,
 }: {
   items: CartItem[];
   onUbahQty: (key: string, selisih: number) => void;
@@ -26,8 +31,11 @@ export function CartPanel({
   onSimpan: () => void;
   isPending: boolean;
   total: number;
+  dibayar: number;
+  onUbahDibayar: (nilai: number) => void;
 }) {
   const kosong = items.length === 0;
+  const { kembalian, kurang, cukup } = hitungKembalian({ total, dibayar });
 
   return (
     <Card className="lg:sticky lg:top-4">
@@ -109,10 +117,36 @@ export function CartPanel({
           <span className="tabular-nums">{formatCurrency(total)}</span>
         </div>
 
+        <div className="grid gap-2">
+          <Label htmlFor="dibayar">Uang diterima</Label>
+          <Input
+            id="dibayar"
+            inputMode="numeric"
+            placeholder="0"
+            className="tabular-nums"
+            disabled={kosong}
+            value={dibayar === 0 ? "" : String(dibayar)}
+            onChange={(event) =>
+              onUbahDibayar(keAngka(event.target.value.replace(/\D/g, "")))
+            }
+          />
+        </div>
+
+        <div className="flex justify-between text-sm">
+          <span className={cukup ? "text-muted-foreground" : "text-destructive"}>
+            {cukup ? "Kembalian" : "Kurang"}
+          </span>
+          <span
+            className={`font-medium tabular-nums ${cukup ? "" : "text-destructive"}`}
+          >
+            {formatCurrency(cukup ? kembalian : kurang)}
+          </span>
+        </div>
+
         <Button
           type="button"
           size="lg"
-          disabled={kosong || isPending}
+          disabled={kosong || isPending || !cukup}
           onClick={onSimpan}
         >
           {isPending && <Spinner data-icon="inline-start" />}

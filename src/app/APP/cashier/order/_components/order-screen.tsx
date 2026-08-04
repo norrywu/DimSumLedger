@@ -16,6 +16,7 @@ function cartKey(variantId: string, extra: KatalogExtra[]) {
 
 export function OrderScreen() {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [dibayar, setDibayar] = useState(0);
   const [pilihan, setPilihan] = useState<KatalogItem | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -67,7 +68,10 @@ export function OrderScreen() {
   const hapus = (key: string) =>
     setCart((sebelumnya) => sebelumnya.filter((baris) => baris.key !== key));
 
-  const kosongkan = () => setCart([]);
+  const kosongkan = () => {
+    setCart([]);
+    setDibayar(0);
+  };
 
   const { mutate: simpan, isPending: isSaving } = useSimpanTransaksi({
     onSuccess: kosongkan,
@@ -80,6 +84,7 @@ export function OrderScreen() {
         qty: baris.qty,
         extra: baris.extra.map((extra) => extra.id),
       })),
+      dibayar,
     });
 
   const { total } = hitungKeranjang({
@@ -111,6 +116,8 @@ export function OrderScreen() {
           onSimpan={kirim}
           isPending={isSaving}
           total={total}
+          dibayar={dibayar}
+          onUbahDibayar={setDibayar}
         />
       </div>
 

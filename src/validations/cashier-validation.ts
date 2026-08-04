@@ -16,6 +16,9 @@ export const transaksiSchema = z.object({
       }),
     )
     .min(1, "Keranjang masih kosong."),
+  dibayar: z
+    .number("Uang diterima harus angka.")
+    .min(0, "Uang diterima tidak boleh negatif."),
 });
 
 export type TransaksiInput = z.infer<typeof transaksiSchema>;
