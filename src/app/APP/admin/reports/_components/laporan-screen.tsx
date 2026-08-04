@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { DataTableCard } from "@/components/common/data-table-card";
 import { FilterSelect } from "@/components/common/filter-select";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatTile } from "@/components/common/stat-tile";
 import { PERIODE_OPTIONS } from "@/constants/laporan-constant";
 import { useLaporanPenjualan } from "@/hooks/use-laporan";
 import { formatCurrency } from "@/lib/utils";
@@ -40,25 +40,21 @@ function jumlahkan(rows: BarisLaporan[]) {
   );
 }
 
-function Tile({
-  label,
-  nilai,
-  keterangan,
-}: {
-  label: string;
-  nilai: string;
-  keterangan?: string;
-}) {
+/**
+ * Rincian berkolom, bukan satu baris dipisah titik tengah: angka-angka ini
+ * menjumlah ke nilai utama kartunya, dan itu hanya bisa diperiksa mata kalau
+ * satuannya berbaris rata kanan.
+ */
+function Rincian({ baris }: { baris: [string, number][] }) {
   return (
-    <Card>
-      <CardContent className="grid gap-1 py-4">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <span className="text-2xl font-semibold tabular-nums">{nilai}</span>
-        {keterangan && (
-          <span className="text-xs text-muted-foreground">{keterangan}</span>
-        )}
-      </CardContent>
-    </Card>
+    <span className="mt-1 grid gap-0.5">
+      {baris.map(([label, nilai]) => (
+        <span key={label} className="flex justify-between gap-4">
+          <span>{label}</span>
+          <span className="tabular-nums">{formatCurrency(nilai)}</span>
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -89,13 +85,21 @@ export function LaporanScreen() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">
-        <Tile label="Omzet" nilai={formatCurrency(total.omzet)} />
-        <Tile
+        <StatTile label="Omzet" nilai={formatCurrency(total.omzet)} />
+        <StatTile
           label="Modal"
           nilai={formatCurrency(total.modal)}
-          keterangan={`Bahan ${formatCurrency(total.bahan)} · Kemasan ${formatCurrency(total.kemasan)} · Extra ${formatCurrency(total.extra)}`}
+          keterangan={
+            <Rincian
+              baris={[
+                ["Bahan", total.bahan],
+                ["Kemasan", total.kemasan],
+                ["Extra", total.extra],
+              ]}
+            />
+          }
         />
-        <Tile
+        <StatTile
           label="Upah"
           nilai={formatCurrency(total.upah)}
           keterangan={
@@ -104,7 +108,7 @@ export function LaporanScreen() {
               : undefined
           }
         />
-        <Tile
+        <StatTile
           label="Laba"
           nilai={formatCurrency(total.laba)}
           keterangan={total.omzet > 0 ? `Margin ${margin}%` : undefined}

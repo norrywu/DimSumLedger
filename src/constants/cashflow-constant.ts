@@ -20,11 +20,17 @@ export function cashFlowDefaults(): CashFlowFormValues {
 
 /** `YYYY-MM-DD` menurut jam LOKAL, bukan `toISOString()` yang memakai UTC. */
 export function hariIni() {
-  const sekarang = new Date();
-  const bulan = `${sekarang.getMonth() + 1}`.padStart(2, "0");
-  const tanggal = `${sekarang.getDate()}`.padStart(2, "0");
+  return tanggalKe(0);
+}
 
-  return `${sekarang.getFullYear()}-${bulan}-${tanggal}`;
+export function tanggalKe(mundurHari: number) {
+  const hasil = new Date();
+  hasil.setDate(hasil.getDate() - mundurHari);
+
+  const bulan = `${hasil.getMonth() + 1}`.padStart(2, "0");
+  const tanggal = `${hasil.getDate()}`.padStart(2, "0");
+
+  return `${hasil.getFullYear()}-${bulan}-${tanggal}`;
 }
 
 /**

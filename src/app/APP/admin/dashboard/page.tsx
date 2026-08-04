@@ -1,9 +1,15 @@
-export default function Home() {
+import { DashboardScreen } from "./_components/dashboard-screen";
+
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <div className="flex items-center gap-4">this is admin page</div>
-      </main>
+    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Dasbor</h1>
+        <p className="text-sm text-muted-foreground">
+          Ringkasan penjualan dan arus kas.
+        </p>
+      </div>
+      <DashboardScreen />
     </div>
   );
 }

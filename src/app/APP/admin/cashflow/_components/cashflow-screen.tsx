@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { subDays } from "date-fns";
 
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
 import { DataTableCard } from "@/components/common/data-table-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatTile } from "@/components/common/stat-tile";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { hariIni } from "@/constants/cashflow-constant";
+import { hariIni, tanggalKe } from "@/constants/cashflow-constant";
 import {
   useCashFlow,
   useDeleteCashFlow,
@@ -24,24 +23,6 @@ import {
   type CashFlowFormTarget,
 } from "./cashflow-form-sheet";
 
-function tanggalKe(offsetHari: number) {
-  const hasil = subDays(new Date(), offsetHari);
-  const bulan = `${hasil.getMonth() + 1}`.padStart(2, "0");
-  const tanggal = `${hasil.getDate()}`.padStart(2, "0");
-
-  return `${hasil.getFullYear()}-${bulan}-${tanggal}`;
-}
-
-function Tile({ label, nilai }: { label: string; nilai: string }) {
-  return (
-    <Card>
-      <CardContent className="grid gap-1 py-4">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <span className="text-2xl font-semibold tabular-nums">{nilai}</span>
-      </CardContent>
-    </Card>
-  );
-}
 
 export function CashFlowScreen() {
   const [dari, setDari] = useState(() => tanggalKe(29));
@@ -116,9 +97,9 @@ export function CashFlowScreen() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Tile label="Pemasukan" nilai={formatCurrency(masuk)} />
-        <Tile label="Pengeluaran" nilai={formatCurrency(keluar)} />
-        <Tile label="Selisih" nilai={formatCurrency(masuk - keluar)} />
+        <StatTile label="Pemasukan" nilai={formatCurrency(masuk)} />
+        <StatTile label="Pengeluaran" nilai={formatCurrency(keluar)} />
+        <StatTile label="Selisih" nilai={formatCurrency(masuk - keluar)} />
       </div>
 
       <DataTableCard<CashFlow>
