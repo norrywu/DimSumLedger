@@ -30,10 +30,12 @@ export function RiwayatDetailSheet({
   transaksi,
   open,
   onOpenChange,
+  judul = "Detail transaksi",
 }: {
   transaksi: RiwayatTransaksi | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  judul?: string;
 }) {
   const { kembalian } = hitungKembalian({
     total: transaksi?.total ?? 0,
@@ -45,7 +47,7 @@ export function RiwayatDetailSheet({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Detail transaksi</SheetTitle>
+            <SheetTitle>{judul}</SheetTitle>
             <SheetDescription>
               {transaksi
                 ? `${formatDateTime(transaksi.created_at)} · ${transaksi.kasir_nama}`

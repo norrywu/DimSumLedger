@@ -3,14 +3,16 @@
 import {
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { getRiwayatTransaksi } from "@/clients/transaksi";
+import { getRiwayatTransaksi, getTransaksiById } from "@/clients/transaksi";
 import {
   RIWAYAT_PER_HALAMAN,
   RIWAYAT_TRANSAKSI_KEY,
+  TRANSAKSI_DETAIL_KEY,
 } from "@/constants/cashier-constant";
 import { batalkanTransaksi, simpanTransaksi } from "@/servers/transaksi";
 import type { TransaksiActionResult } from "@/types/cashier";
@@ -36,6 +38,15 @@ export function useRiwayatTransaksi() {
   });
 }
 
+/** Kunci terpisah dari riwayat supaya invalidasi daftar tidak ikut menarik ulang nota yang sedang dibuka. */
+export function useTransaksi(id: string | null) {
+  return useQuery({
+    queryKey: [...TRANSAKSI_DETAIL_KEY, id],
+    queryFn: () => getTransaksiById(id as string),
+    enabled: id !== null,
+  });
+}
+
 export function useBatalkanTransaksi(options?: { onSuccess?: () => void }) {
   const queryClient = useQueryClient();
 
@@ -52,7 +63,9 @@ export function useBatalkanTransaksi(options?: { onSuccess?: () => void }) {
   });
 }
 
-export function useSimpanTransaksi(options?: { onSuccess?: () => void }) {
+export function useSimpanTransaksi(options?: {
+  onSuccess?: (id: string) => void;
+}) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -63,7 +76,7 @@ export function useSimpanTransaksi(options?: { onSuccess?: () => void }) {
       // melihat daftar lama dan mengira transaksinya gagal.
       queryClient.invalidateQueries({ queryKey: RIWAYAT_TRANSAKSI_KEY });
       toast.success(result.message);
-      options?.onSuccess?.();
+      options?.onSuccess?.(result.id);
     },
     onError: (error) => {
       toast.error(error.message);

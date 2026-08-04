@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 
+import { RiwayatDetailSheet } from "@/components/transaksi/riwayat-detail-sheet";
 import { useKatalogExtra, useKatalogJual } from "@/hooks/use-katalog";
-import { useSimpanTransaksi } from "@/hooks/use-transaksi";
+import { useSimpanTransaksi, useTransaksi } from "@/hooks/use-transaksi";
 import { hitungKeranjang } from "@/lib/count";
 import type { CartItem, KatalogExtra, KatalogItem } from "@/types/cashier";
 import { AddItemSheet } from "./add-item-sheet";
@@ -17,6 +18,7 @@ function cartKey(variantId: string, extra: KatalogExtra[]) {
 export function OrderScreen() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [dibayar, setDibayar] = useState(0);
+  const [notaId, setNotaId] = useState<string | null>(null);
   const [pilihan, setPilihan] = useState<KatalogItem | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -73,9 +75,16 @@ export function OrderScreen() {
     setDibayar(0);
   };
 
+  // Keranjang dikosongkan agar kasir bisa langsung melayani antrean
+  // berikutnya; notanya menyusul di panel terpisah, tidak menahan alur.
   const { mutate: simpan, isPending: isSaving } = useSimpanTransaksi({
-    onSuccess: kosongkan,
+    onSuccess: (id) => {
+      kosongkan();
+      setNotaId(id);
+    },
   });
+
+  const { data: nota } = useTransaksi(notaId);
 
   const kirim = () =>
     simpan({
@@ -127,6 +136,15 @@ export function OrderScreen() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onAdd={tambah}
+      />
+
+      <RiwayatDetailSheet
+        transaksi={nota ?? null}
+        open={notaId !== null}
+        onOpenChange={(open) => {
+          if (!open) setNotaId(null);
+        }}
+        judul="Transaksi tersimpan"
       />
     </>
   );
