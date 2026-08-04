@@ -1,10 +1,17 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getRiwayatTransaksi } from "@/clients/transaksi";
-import { RIWAYAT_TRANSAKSI_KEY } from "@/constants/cashier-constant";
+import {
+  RIWAYAT_PER_HALAMAN,
+  RIWAYAT_TRANSAKSI_KEY,
+} from "@/constants/cashier-constant";
 import { batalkanTransaksi, simpanTransaksi } from "@/servers/transaksi";
 import type { TransaksiActionResult } from "@/types/cashier";
 import type { TransaksiInput } from "@/validations/cashier-validation";
@@ -16,9 +23,16 @@ function unwrap(result: TransaksiActionResult) {
 }
 
 export function useRiwayatTransaksi() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: RIWAYAT_TRANSAKSI_KEY,
-    queryFn: getRiwayatTransaksi,
+    queryFn: ({ pageParam }) => getRiwayatTransaksi(pageParam),
+    initialPageParam: undefined as string | undefined,
+    // Halaman yang kurang dari sepenuh berarti sudah mentok; kalau pas penuh,
+    // `created_at` baris terakhir jadi kursor halaman berikutnya.
+    getNextPageParam: (lastPage) =>
+      lastPage.length < RIWAYAT_PER_HALAMAN
+        ? undefined
+        : lastPage.at(-1)?.created_at,
   });
 }
 

@@ -565,6 +565,20 @@ export type Database = {
           role: string
         }[]
       }
+      laporan_penjualan: {
+        Args: { p_dari: string; p_sampai: string }
+        Returns: {
+          laba: number
+          modal: number
+          modal_bahan: number
+          modal_extra: number
+          modal_kemasan: number
+          nama_produk: string
+          nama_varian: string
+          omzet: number
+          porsi: number
+        }[]
+      }
       simpan_transaksi: {
         Args: { p_dibayar: number; p_items: Json }
         Returns: string

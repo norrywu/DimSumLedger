@@ -4,7 +4,12 @@ import { useState } from "react";
 
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
 import { DataTableCard } from "@/components/common/data-table-card";
-import { useBatalkanTransaksi, useRiwayatTransaksi } from "@/hooks/use-transaksi";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  useBatalkanTransaksi,
+  useRiwayatTransaksi,
+} from "@/hooks/use-transaksi";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import type { RiwayatTransaksi } from "@/types/cashier";
 import { riwayatColumns } from "./columns";
@@ -14,14 +19,21 @@ export function RiwayatTable() {
   const [detail, setDetail] = useState<RiwayatTransaksi | null>(null);
   const [batalTarget, setBatalTarget] = useState<RiwayatTransaksi | null>(null);
 
-  const { data, isPending, isError, error } = useRiwayatTransaksi();
+  const {
+    data,
+    isPending,
+    isError,
+    error,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useRiwayatTransaksi();
+
   const { mutate: batalkan, isPending: isBatal } = useBatalkanTransaksi({
     onSuccess: () => setBatalTarget(null),
   });
 
-  const rows = data ?? [];
-  const selesai = rows.filter((row) => row.status !== "dibatalkan");
-  const omzet = selesai.reduce((jumlahnya, row) => jumlahnya + row.total, 0);
+  const rows = data?.pages.flat() ?? [];
 
   return (
     <>
@@ -34,9 +46,11 @@ export function RiwayatTable() {
         })}
         data={rows}
         rowKey={(row) => row.id}
+        // Sengaja tanpa jumlah omzet: yang dimuat baru sebagian, jadi angka
+        // apa pun di sini akan terbaca sebagai total padahal bukan.
         caption={
           rows.length > 0
-            ? `${selesai.length} transaksi selesai · ${formatCurrency(omzet)}. Menampilkan 50 terbaru.`
+            ? `Menampilkan ${rows.length} transaksi terbaru.`
             : undefined
         }
         emptyMessage={
@@ -47,6 +61,20 @@ export function RiwayatTable() {
               : "Belum ada transaksi."
         }
       />
+
+      {hasNextPage && (
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isFetchingNextPage}
+            onClick={() => fetchNextPage()}
+          >
+            {isFetchingNextPage && <Spinner data-icon="inline-start" />}
+            Muat lebih banyak
+          </Button>
+        </div>
+      )}
 
       <DetailSheet
         transaksi={detail}

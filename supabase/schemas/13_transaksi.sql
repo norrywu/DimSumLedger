@@ -18,8 +18,15 @@ create table public.transaksi (
     check (dibayar >= total)
 );
 
+-- Melayani halaman riwayat pengelola: semua nota, terbaru dulu.
 create index transaksi_created_idx on public.transaksi (created_at desc);
-create index transaksi_kasir_idx   on public.transaksi (kasir_id);
+
+-- Composite, bukan `(kasir_id)` saja. RLS menambahkan `kasir_id = auth.uid()`
+-- ke setiap query kasir, sedangkan halaman riwayat mengurutkan `created_at
+-- desc` — dengan index terpisah Postgres terpaksa mengambil SELURUH nota kasir
+-- itu lalu menyortirnya tiap kali halaman dibuka. Kolom kiri tetap `kasir_id`,
+-- jadi pencarian per kasir polos tetap terlayani.
+create index transaksi_kasir_idx on public.transaksi (kasir_id, created_at desc);
 
 create table public.transaksi_item (
   id           uuid          primary key default gen_random_uuid(),

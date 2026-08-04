@@ -1,13 +1,24 @@
+import { RIWAYAT_PER_HALAMAN } from "@/constants/cashier-constant";
 import { createClient } from "@/lib/supabase/client";
 import type { RiwayatTransaksi } from "@/types/cashier";
 
-// Tidak ada filter `kasir_id` di sini: policy `kasir_baca_transaksi_sendiri`
-// sudah membatasi kasir ke notanya sendiri, sedangkan pengelola memang boleh
-// melihat semuanya lewat `pengelola_akses_penuh`.
-export async function getRiwayatTransaksi(): Promise<RiwayatTransaksi[]> {
+/**
+ * Paginasi keyset, bukan `.range()`. OFFSET memaksa Postgres membaca lalu
+ * MEMBUANG semua baris sebelum halaman yang diminta — halaman 1 instan,
+ * halaman 200 merangkak. Dengan kursor `created_at`, tiap halaman selalu
+ * membaca tepat sebanyak `RIWAYAT_PER_HALAMAN` lewat index
+ * `transaksi_kasir_idx (kasir_id, created_at desc)`.
+ *
+ * Tidak ada filter `kasir_id` di sini: policy `kasir_baca_transaksi_sendiri`
+ * sudah membatasi kasir ke notanya sendiri, sedangkan pengelola memang boleh
+ * melihat semuanya lewat `pengelola_akses_penuh`.
+ */
+export async function getRiwayatTransaksi(
+  cursor?: string,
+): Promise<RiwayatTransaksi[]> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("transaksi")
     .select(
       `id, created_at, status, total, dibayar,
@@ -17,7 +28,13 @@ export async function getRiwayatTransaksi(): Promise<RiwayatTransaksi[]> {
        )`,
     )
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(RIWAYAT_PER_HALAMAN);
+
+  if (cursor) {
+    query = query.lt("created_at", cursor);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(`Gagal memuat riwayat: ${error.message}`);
