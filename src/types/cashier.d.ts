@@ -39,6 +39,7 @@ export type RiwayatTransaksi = {
   id: string;
   created_at: string;
   status: string;
+  kasir_nama: string;
   total: number;
   dibayar: number;
   transaksi_item: RiwayatItem[];

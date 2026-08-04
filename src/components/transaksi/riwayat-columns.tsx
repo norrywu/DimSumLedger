@@ -8,20 +8,34 @@ import type { RiwayatTransaksi } from "@/types/cashier";
 
 const angka = "text-right tabular-nums";
 
+/**
+ * `tampilkanKasir` hanya untuk halaman pengelola: di layar kasir semua nota
+ * memang miliknya sendiri, jadi kolomnya cuma mengulang nama yang sama.
+ */
 export function riwayatColumns({
   onLihat,
   onBatalkan,
   isBusy,
+  tampilkanKasir = false,
 }: {
   onLihat: (transaksi: RiwayatTransaksi) => void;
   onBatalkan: (transaksi: RiwayatTransaksi) => void;
   isBusy?: boolean;
+  tampilkanKasir?: boolean;
 }): DataTableColumn<RiwayatTransaksi>[] {
   return [
     {
       header: "Waktu",
       render: (row) => formatDateTime(row.created_at),
     },
+    ...(tampilkanKasir
+      ? [
+          {
+            header: "Kasir",
+            render: (row: RiwayatTransaksi) => row.kasir_nama,
+          },
+        ]
+      : []),
     {
       header: "Isi",
       render: (row) => {

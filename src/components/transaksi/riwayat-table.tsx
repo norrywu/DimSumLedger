@@ -12,10 +12,21 @@ import {
 } from "@/hooks/use-transaksi";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import type { RiwayatTransaksi } from "@/types/cashier";
-import { riwayatColumns } from "./columns";
-import { DetailSheet } from "./detail-sheet";
+import { riwayatColumns } from "./riwayat-columns";
+import { RiwayatDetailSheet } from "./riwayat-detail-sheet";
 
-export function RiwayatTable() {
+/**
+ * Dipakai dua halaman: riwayat kasir dan riwayat pengelola. Query-nya sama
+ * persis — RLS yang membedakan isinya, jadi tidak ada percabangan peran di
+ * sini. Yang berbeda cuma perlu-tidaknya kolom Kasir.
+ */
+export function RiwayatTable({
+  title = "Riwayat transaksi",
+  tampilkanKasir = false,
+}: {
+  title?: string;
+  tampilkanKasir?: boolean;
+}) {
   const [detail, setDetail] = useState<RiwayatTransaksi | null>(null);
   const [batalTarget, setBatalTarget] = useState<RiwayatTransaksi | null>(null);
 
@@ -38,11 +49,12 @@ export function RiwayatTable() {
   return (
     <>
       <DataTableCard<RiwayatTransaksi>
-        title="Riwayat transaksi"
+        title={title}
         columns={riwayatColumns({
           onLihat: setDetail,
           onBatalkan: setBatalTarget,
           isBusy: isBatal,
+          tampilkanKasir,
         })}
         data={rows}
         rowKey={(row) => row.id}
@@ -76,7 +88,7 @@ export function RiwayatTable() {
         </div>
       )}
 
-      <DetailSheet
+      <RiwayatDetailSheet
         transaksi={detail}
         open={detail !== null}
         onOpenChange={(open) => {

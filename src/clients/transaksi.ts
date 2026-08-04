@@ -21,7 +21,7 @@ export async function getRiwayatTransaksi(
   let query = supabase
     .from("transaksi")
     .select(
-      `id, created_at, status, total, dibayar,
+      `id, created_at, status, kasir_nama, total, dibayar,
        transaksi_item (
          id, nama_produk, nama_varian, jumlah_pcs, qty, harga_satuan,
          transaksi_item_modifier ( id, nama, tambahan_harga )

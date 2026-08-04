@@ -131,3 +131,34 @@
     @apply font-sans;
   }
 }
+/* Cetak nota.
+ *
+ * `visibility`, bukan `display: none`, untuk menyembunyikan sisa halaman:
+ * mengubah display akan meruntuhkan layout induk sehingga nota ikut hilang,
+ * sedangkan visibility menyisakan kotaknya dan hanya menyembunyikan isinya.
+ * Elemen nota lalu dikembalikan visible dan dipindah ke pojok kiri atas. */
+@page {
+  /* Nol, dan seluruh jarak tepi diatur padding di elemen notanya. Menyetel
+   * `size` di sini akan memaksa browser menganggap kertasnya satu ukuran
+   * tertentu — salah begitu printer thermal dipasang. */
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #nota-cetak,
+  #nota-cetak * {
+    visibility: visible;
+  }
+
+  #nota-cetak {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+}
