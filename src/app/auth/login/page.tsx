@@ -1,11 +1,28 @@
-"use client";
-
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/auth/login/_components/login-form";
+import { getAuthUser } from "@/servers/auth";
 import { GalleryVerticalEndIcon } from "lucide-react";
 
-export default function LoginPage() {
+/**
+ * Server Component sekarang — `"use client"` di sini tidak pernah dibutuhkan:
+ * seluruh isian dan handler-nya sudah ada di `<LoginForm />` yang punya
+ * direktifnya sendiri. Sebagai Server Component, sesi bisa diperiksa sebelum
+ * satu piksel pun terkirim.
+ *
+ * `proxy.ts` hanya menendang yang BELUM login masuk ke halaman terlindungi —
+ * kebalikannya tidak dijaga siapa pun, jadi yang sudah login masih bisa
+ * mendarat di form ini lewat bookmark atau tombol Back.
+ */
+export default async function LoginPage() {
+  const user = await getAuthUser();
+
+  // Ke "/" saja, bukan langsung ke layar perannya: `src/app/page.tsx` sudah
+  // jadi persimpangan yang menentukan tujuan per peran. Menduplikasi logika
+  // itu di sini berarti dua tempat yang harus diubah bersamaan.
+  if (user) redirect("/");
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
