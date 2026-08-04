@@ -56,7 +56,7 @@ export async function login(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
     // Pesannya sengaja tidak membedakan email salah dan sandi salah, supaya
@@ -64,8 +64,14 @@ export async function login(
     return { message: "Email atau kata sandi salah." };
   }
 
+  // Diambil dari respons sign-in, bukan `getAuthUser()`: klaimnya sudah ada di
+  // tangan, jadi tidak perlu perjalanan kedua. Dan dari `app_metadata`, bukan
+  // `user_metadata` — yang kedua bisa diubah pengguna sendiri.
+  const role = (data.user?.app_metadata as AppMetadata | undefined)?.role;
+  const manager = role === "owner" || role === "admin";
+
   // redirect() melempar, jadi harus di luar blok try/catch.
-  redirect("/");
+  redirect(manager ? "/APP/admin/dashboard" : "/APP/cashier/order");
 }
 
 export async function logout() {

@@ -1,269 +1,226 @@
-# PRD — Aplikasi POS Teras Dimsum (Prototipe)
+# PRD — Aplikasi POS Teras Dimsum
 
-**Versi:** 0.1
-**Tanggal:** 26 Juli 2026
-**Status:** Prototipe belajar, bukan untuk produksi
-**Stack:** Next.js (App Router) + TypeScript + Tailwind CSS + Supabase (PostgreSQL)
+**Versi:** 1.0
+**Tanggal:** 4 Agustus 2026
+**Status:** Berjalan, sudah berautentikasi. Belum dipakai jualan sungguhan.
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · Supabase (PostgreSQL 17)
+
+> Versi 0.1 menggambarkan prototipe tanpa auth dengan rute `/produk`, `/laporan`,
+> dan fitur dine-in/takeaway serta biaya kantong plastik. Semua itu sudah tidak
+> berlaku. Dokumen ini menggambarkan aplikasi sebagaimana adanya sekarang.
 
 ---
 
 ## 1. Tujuan
 
-Membuat web app sederhana untuk **melihat logika POS bekerja secara nyata** — terutama tiga hal yang sudah dirancang di skema database:
+Aplikasi kasir untuk usaha dimsum satu outlet, dengan tiga hal yang jadi
+alasan utama dibangun sendiri alih-alih memakai POS jadi:
 
-1. Produk punya varian (Isi 4 / 6 / 8), dan harga menempel di varian
-2. Chili oil sebagai modifier, bukan produk terpisah
-3. Harga & HPP **dibekukan** saat transaksi, sehingga laporan lama tidak berubah saat harga naik
-
-Ini prototipe untuk membuktikan rancangannya benar, bukan aplikasi yang langsung dipakai jualan.
-
----
-
-## 2. Yang TIDAK dibuat (non-goals)
-
-Sengaja dikeluarkan supaya prototipe ini selesai, bukan mangkrak:
-
-| Tidak dibuat                   | Alasan                                    |
-| ------------------------------ | ----------------------------------------- |
-| Login / autentikasi            | Diminta tanpa auth                        |
-| Manajemen stok                 | Butuh data pcs yang akurat dulu           |
-| Cetak struk ke printer thermal | Butuh perangkat keras                     |
-| Multi-outlet                   | Belum ada kebutuhan                       |
-| Mode offline                   | Rumit, tidak menambah pemahaman logika    |
-| Resep / BOM per gram           | Bikin input produk jadi 15 menit per item |
-| Diskon & promo                 | Tambahan lapisan hitungan, tunda dulu     |
+1. **Harga menempel di varian**, bukan produk — "isi 4" dan "isi 8" punya harga
+   dan modal sendiri
+2. **Modal terpecah empat**: bahan, kemasan, upah per potong, dan extra —
+   sehingga laba yang dilaporkan bukan tebakan
+3. **Harga & modal dibekukan saat transaksi**, sehingga laporan lama tidak
+   berubah saat harga naik
 
 ---
 
-## 3. ⚠️ Peringatan keamanan — WAJIB DIBACA
+## 2. Peran
 
-Tanpa auth, aplikasi ini **terbuka untuk siapa saja yang tahu URL-nya**.
+| Peran     | Akses                                                            |
+| --------- | ---------------------------------------------------------------- |
+| `owner`   | Semua                                                            |
+| `admin`   | Semua (setara owner; pembedaannya disiapkan untuk kebutuhan nanti) |
+| `cashier` | Hanya layar kasir dan riwayat transaksinya sendiri                |
 
-Dokumentasi Supabase menyatakan:
-
-> "RLS must always be enabled on any tables stored in an exposed schema."
-
-Terjemahan bebasnya: RLS (Row Level Security) itu penjaga di tingkat baris data. Kalau tabelmu bisa diakses dari internet, penjaga ini **wajib** dinyalakan. <br>
-Dan menurut dokumentasi Supabase, publishable/anon key memang bukan rahasia — dia aman diekspos **hanya jika** dipasangkan dengan RLS dan hak akses seminimal mungkin. Kalau RLS mati, siapa pun yang punya URL proyek dan anon key bisa membaca dan mengubah seluruh isi databasemu.
-
-**Konsekuensi untuk prototipe ini:**
-
-- Jangan pernah memasukkan data transaksi asli usaha ke sini
-- Jangan pakai untuk jualan sungguhan sebelum auth + RLS dipasang
-- Jangan pernah menaruh `service_role key` di kode frontend — kunci itu menembus semua penjaga
-- Jangan sebar URL-nya
-
-Analoginya: ini seperti membangun rumah tanpa pintu dulu, supaya kelihatan jelas denahnya. Bagus untuk belajar, tapi jangan ditinggali.
-
-**Kompromi yang disarankan:** tetap nyalakan RLS, lalu buat policy terbuka sementara. Nanti waktu auth ditambahkan, tinggal ganti isi policy-nya — tidak perlu bongkar ulang.
-
-```sql
--- Nyalakan penjaganya (lakukan untuk SEMUA tabel)
-ALTER TABLE produk ENABLE ROW LEVEL SECURITY;
-
--- Sementara: izinkan semua. GANTI ini setelah auth ada.
-CREATE POLICY "prototipe_akses_terbuka" ON produk
-  FOR ALL TO anon USING (true) WITH CHECK (true);
-```
+Peran disimpan di `profiles.role`, lalu disalin trigger
+`internal.sync_profile_to_auth` ke `app_metadata` di JWT. **Keputusan hak akses
+selalu membaca `app_metadata`, tidak pernah `user_metadata`** — yang kedua bisa
+diubah pengguna sendiri lewat `supabase.auth.updateUser()`.
 
 ---
 
-## 4. Pengguna
+## 3. Keamanan
 
-Satu peran saja: **operator** (kasir merangkap admin). Tidak ada pembeda hak akses.
+Berbeda dari versi 0.1 yang sengaja tanpa auth, aplikasi ini sekarang berlapis:
 
----
+| Lapis                | Wujud                                                          |
+| -------------------- | -------------------------------------------------------------- |
+| **Batas sebenarnya** | RLS di setiap tabel; `internal.is_pengelola()` membaca klaim JWT |
+| Rute                 | `src/proxy.ts` memantulkan non-pengelola dari `/APP/admin`      |
+| Halaman              | `requireManager()` di `APP/admin/layout.tsx` untuk muat langsung |
+| Server Action        | `getManager()` wajib pada apa pun yang memakai admin client      |
 
-## 5. Halaman
+Guard rute adalah **lapisan pengalaman, bukan keamanan**. Seandainya halaman
+admin lolos dirender untuk kasir, setiap query di dalamnya tetap kosong atau
+ditolak database.
 
-### 5.1 `/` — Kasir (halaman utama)
+Penjagaan tambahan yang melekat di data, bukan di UI:
 
-Halaman paling sering dipakai. Layout dua kolom di layar lebar, menumpuk di HP.
-
-**Kiri — daftar menu**
-
-- Produk dikelompokkan per kategori, urut sesuai kolom `urutan`
-- Hanya menampilkan produk & varian dengan `aktif = TRUE`
-- Tiap varian jadi satu tombol: nama varian + harga
-- Klik varian → muncul pilihan modifier (chili oil) → masuk keranjang
-
-**Kanan — keranjang**
-
-- Daftar item: nama produk, varian, modifier, qty, subtotal
-- Tombol tambah/kurang qty, tombol hapus item
-- Pilihan tipe: dine-in / takeaway
-- Pilihan biaya tambahan: kantong plastik (checkbox)
-- Pilihan metode bayar: tunai / QRIS / transfer
-- Total besar di bawah
-- Tombol **Simpan Transaksi**
-
-**Setelah disimpan:** muncul ringkasan struk di layar, keranjang dikosongkan, siap pesanan berikutnya.
-
-### 5.2 `/produk` — Kelola produk
-
-- Daftar produk beserta varian-variannya
-- Form tambah/edit produk: nama, kategori, aktif
-- Di bawahnya, tabel varian yang bisa ditambah barisnya:
-
-| Nama varian | Jumlah pcs | Harga jual | Modal bahan | Kemasan               | HPP    | Untung |
-| ----------- | ---------- | ---------- | ----------- | --------------------- | ------ | ------ |
-| Isi 4       | 4          | 20.000     | 9.500       | ☑ Mika kecil ☑ Sendok | 10.450 | 9.550  |
-
-- Kolom **HPP** dan **Untung** berwarna abu-abu dan tidak bisa diklik — itu hasil hitungan, bukan input
-- Pengaturan chili oil per varian: `tambahan_harga` (5.000) dan `tambahan_modal`
-
-### 5.3 `/kemasan` — Kelola kemasan
-
-Halaman paling sederhana. Tabel: nama + harga satuan + aktif. Sekali isi, jarang disentuh.
-
-Efeknya besar: ubah harga mika di sini, HPP semua varian yang memakainya ikut berubah otomatis.
-
-### 5.4 `/laporan` — Laporan harian
-
-- Pilih rentang tanggal
-- Ringkasan: omzet, total modal, untung kotor, jumlah transaksi, total pcs terjual
-- Tabel per hari
-- Daftar produk terlaris
-- Tabel HPP & untung per varian (dari `v_hpp_varian`) — untuk melihat varian mana yang tipis untungnya
-
-### 5.5 `/transaksi` — Riwayat
-
-- Daftar struk, terbaru di atas
-- Klik → detail struk
-- Tombol **Batalkan** (mengubah `status` jadi `dibatalkan`) — **tidak ada tombol hapus**
+- Harga tidak pernah dikirim dari client. `simpan_transaksi` menghitung total
+  dari `variants.harga_jual`; keranjang yang dirusak lewat POST paling banter
+  bisa mengubah varian dan jumlah
+- `simpan_transaksi` `SECURITY DEFINER` karena kasir tidak boleh membaca tabel
+  master; identitasnya diambil dari `auth.uid()`, bukan dari argumen
+- `batalkan_transaksi` `SECURITY INVOKER` — RLS yang memutuskan, fungsi tidak
+  menambah wewenang
 
 ---
 
-## 6. Logika inti
+## 4. Halaman
 
-Bagian ini yang paling penting untuk dibuktikan.
+### Kasir
 
-### 6.1 Hitungan keranjang
+| Rute                       | Isi                                                          |
+| -------------------------- | ------------------------------------------------------------ |
+| `/APP/cashier/order`        | Grid menu, keranjang, uang diterima + kembalian, simpan      |
+| `/APP/cashier/transactions` | Riwayat notanya sendiri, detail, batalkan, cetak nota        |
+
+Setelah simpan, keranjang dikosongkan dan panel nota terbuka dengan tombol
+cetak. Notanya **diambil ulang dari database**, bukan dirakit dari keranjang di
+memori — struk harus berasal dari baris yang benar-benar tersimpan.
+
+### Pengelola
+
+| Rute                        | Isi                                                              |
+| --------------------------- | ---------------------------------------------------------------- |
+| `/APP/admin/dashboard`      | Ringkasan hari ini & 30 hari, terlaris, selisih kas               |
+| `/APP/admin/products`       | Produk + tarif upah per pcs                                       |
+| `/APP/admin/variants`       | Varian, kemasan, pratinjau HPP langsung                           |
+| `/APP/admin/categories`     | Kategori                                                          |
+| `/APP/admin/packagings`     | Kemasan dan harga satuannya                                       |
+| `/APP/admin/extra`          | Modifier (chili oil, saus keju)                                   |
+| `/APP/admin/transactions`   | Riwayat seluruh kasir                                             |
+| `/APP/admin/reports`        | Laporan penjualan per varian, modal terpecah                      |
+| `/APP/admin/cashflow`       | Arus kas manual + tombol setor omzet POS                          |
+| `/APP/admin/users`          | Kelola pengguna dan perannya                                      |
+
+---
+
+## 5. Logika inti
+
+### 5.1 Hitungan keranjang
 
 ```
-subtotal_item   = (harga_satuan + total_tambahan_modifier) × qty
-subtotal_biaya  = jumlah semua nominal biaya (kantong plastik dll)
-TOTAL BAYAR     = jumlah semua subtotal_item + subtotal_biaya
+subtotal_item = (harga_jual + Σ tambahan_harga_extra) × qty
+TOTAL         = Σ subtotal_item
+kembalian     = dibayar − TOTAL      ← dihitung, tidak disimpan
 ```
 
-Contoh: 2 porsi Mentai Isi 4 + chili oil, 1 Goreng Keju Lumer, 1 kantong plastik
+Extra berlaku untuk **seluruh baris**, dijamin `unique (transaksi_item_id,
+modifier_id)`. Karena itu `transaksi_item_modifier` tidak punya kolom qty —
+qty-nya ada di induknya.
 
-```
-(20.000 + 5.000) × 2  = 50.000
- 23.000          × 1  = 23.000
- kantong plastik      =    500
- ─────────────────────────────
- TOTAL                = 73.500
-```
+> **Jebakan pelaporan:** `sum(tambahan_harga)` langsung ke
+> `transaksi_item_modifier` selalu kurang hitung. Wajib join ke `transaksi_item`
+> lalu dikali `qty`. `v_penjualan_item` sudah menutup ini; jangan query mentah.
 
-### 6.2 Pembekuan data saat simpan (paling krusial)
+### 5.2 Pembekuan saat simpan
 
-Saat tombol Simpan ditekan, aplikasi **menyalin** nilai-nilai ini ke tabel transaksi — tidak cukup menyimpan `varian_id` saja:
+| Kolom `transaksi_item` | Sumber                        |
+| ---------------------- | ----------------------------- |
+| `nama_produk`          | `products.nama`               |
+| `nama_varian`          | `variants.nama`               |
+| `jumlah_pcs`           | `variants.jumlah_pcs`         |
+| `harga_satuan`         | `variants.harga_jual`         |
+| `modal_bahan_satuan`   | `v_hpp_varian.modal_bahan`    |
+| `modal_kemasan_satuan` | `v_hpp_varian.modal_kemasan`  |
+| `modal_upah_satuan`    | `v_hpp_varian.modal_upah`     |
+| `hpp_satuan`           | **generated** = jumlah ketiga modal di atas |
 
-| Disalin ke `transaksi_item` | Dari mana                                        |
-| --------------------------- | ------------------------------------------------ |
-| `nama_produk`               | `produk.nama`                                    |
-| `nama_varian`               | `varian.nama`                                    |
-| `jumlah_pcs`                | `varian.jumlah_pcs`                              |
-| `harga_satuan`              | `varian.harga_jual`                              |
-| `hpp_satuan`                | `v_hpp_varian.hpp` ← hasil hitungan, bukan kolom |
+`hpp_satuan` kolom `GENERATED ALWAYS … STORED`, jadi mustahil melenceng dari
+komponennya. Modal diambil dari `v_hpp_varian`, bukan dihitung ulang di
+frontend — supaya sumber rumusnya cuma satu.
 
-**Kenapa `hpp_satuan` diambil dari view, bukan dihitung di frontend?** Supaya sumber hitungannya cuma satu. Kalau frontend ikut menghitung HPP sendiri, suatu hari rumusnya bisa berbeda dengan yang di database — dan tidak ada yang sadar sampai laporannya aneh.
+### 5.3 Upah per potong
 
-### 6.3 Simpan transaksi harus "semua atau tidak sama sekali"
+Tarif ada di **produk** (`upah_per_pcs`), dikalikan `jumlah_pcs` milik varian.
+"Isi 8" otomatis dua kali "isi 4" tanpa diisi ulang. Varian tanpa `jumlah_pcs`
+mendapat upah nol, bukan null.
 
-Satu transaksi menulis ke 4 tabel: `transaksi`, `transaksi_item`, `transaksi_item_modifier`, `transaksi_biaya`.
+### 5.4 Pembatalan
 
-Kalau tabel pertama berhasil lalu koneksi putus di tabel kedua, akan lahir struk kosong tanpa isi — laporan jadi kacau.
+`status` + `dibatalkan_at` dijaga berpasangan oleh constraint. Kasir boleh
+membatalkan notanya sendiri **dalam 10 menit**; lewat itu wewenang pengelola.
+Jendela pendek itu mencegah nota lama dibatalkan diam-diam saat toko sepi lalu
+tunainya diambil — omzet ikut turun sehingga selisih laci tidak ketahuan.
 
-**Solusi:** buat satu fungsi database (`RPC`) yang menerima seluruh isi keranjang sekaligus dan menulisnya dalam satu transaksi Postgres. Kalau ada satu saja yang gagal, semuanya batal.
+### 5.5 Setoran omzet ke arus kas
 
-> Analoginya: seperti transfer bank. Uang tidak boleh sudah keluar dari rekeningmu tapi belum masuk ke rekening tujuan. Harus dua-duanya berhasil, atau dua-duanya batal.
+`setor_omzet_harian(tanggal)` menghitung omzet hari itu dari `transaksi`, lalu
+menulis satu baris `cash_flow` bersumber `pos`.
 
-### 6.4 Perbaikan `v_laba_harian`
-
-View versi awal belum menghitung modifier dan biaya kantong, jadi angka untungnya lebih kecil dari kenyataan. Harus diperbaiki sebelum halaman laporan dipakai. (Dikerjakan di Tahap 4.)
+- Angkanya dihitung database, tombol hanya mengirim tanggal
+- Unique index partial menjamin **satu setoran per tanggal**
+- Tekan ulang **menyegarkan**, bukan menggandakan — koreksi kalau ada penjualan
+  menyusul atau transaksi dibatalkan
+- Batas hari memakai **WIB eksplisit**; TimeZone database UTC, dan tanpa
+  konversi, penjualan pukul 06:00 WIB jatuh ke tanggal kemarin
 
 ---
 
-## 7. Struktur folder
+## 6. Peta berkas
 
 ```
-app/
-  layout.tsx
-  page.tsx                 ← /       kasir
-  produk/page.tsx          ← /produk
-  kemasan/page.tsx         ← /kemasan
-  laporan/page.tsx         ← /laporan
-  transaksi/page.tsx       ← /transaksi
-  transaksi/[id]/page.tsx  ← detail struk
+supabase/schemas/        skema deklaratif, dijalankan berurutan
+  000_profile  001_helpers  01_categories  02_packagings  03_products
+  04_variants  05_variant_packagings  06_modifiers  07_simpan_varian
+  08_daftar_pengguna  09_katalog_jual  10_v_hpp_varian  12_katalog_extra
+  13_transaksi  14_simpan_transaksi  15_v_penjualan_item
+  16_batalkan_transaksi  17_laporan_penjualan  18_cash_flow  19_setor_omzet
 
-components/
-  kasir/DaftarMenu.tsx
-  kasir/Keranjang.tsx
-  kasir/DialogModifier.tsx
-  produk/FormVarian.tsx
-  ui/                      ← tombol, input, dll
-
-lib/
-  supabase/client.ts       ← koneksi untuk Client Component
-  supabase/server.ts       ← koneksi untuk Server Component
-  hitung.ts                ← SEMUA rumus hitungan, dikumpulkan di sini
-  format.ts               ← format rupiah
-
-types/
-  database.ts              ← hasil generate dari Supabase CLI
+src/
+  proxy.ts               middleware Next 16 — sesi + guard /APP/admin
+  clients/               query BACA dari browser
+  servers/               Server Action TULIS
+  hooks/                 pembungkus react-query
+  lib/count.ts           SEMUA rumus hitungan
+  lib/auth-guard.ts      getManager() dan requireManager()
+  components/transaksi/  riwayat & nota, dipakai kasir dan pengelola
 ```
 
-**Catatan `lib/hitung.ts`:** semua rumus dikumpulkan di satu file, tidak disebar di komponen. Kalau nanti rumusnya berubah, cuma ada satu tempat yang perlu diedit — dan satu tempat yang perlu diuji.
-
-**Catatan `types/database.ts`:** jangan diketik manual. Supabase CLI bisa membuat tipe TypeScript langsung dari skema database, jadi kalau kolom di database berubah, TypeScript langsung memberi tahu bagian kode mana yang rusak.
+Pembagian `clients/` (baca) dan `servers/` (tulis) berlaku di seluruh fitur.
 
 ---
 
-## 8. Tahapan pengerjaan
+## 7. Yang tidak dibuat
 
-Urutannya sengaja begini: yang paling berisiko dikerjakan lebih dulu.
-
-| Tahap | Isi                                                          | Selesai kalau                                                      |
-| ----- | ------------------------------------------------------------ | ------------------------------------------------------------------ |
-| **1** | Setup Next.js + Supabase, jalankan skema SQL, generate types | `v_hpp_varian` bisa ditampilkan di halaman                         |
-| **2** | Halaman `/kemasan` dan `/produk`                             | Bisa input Dimsum Mentai lengkap 3 varian, HPP terhitung otomatis  |
-| **3** | Halaman kasir + simpan transaksi (RPC)                       | Bisa buat struk contoh, data masuk ke 4 tabel dengan benar         |
-| **4** | Perbaiki `v_laba_harian`, buat `/laporan`                    | Angka untung sesuai hitungan manual                                |
-| **5** | `/transaksi` + pembatalan                                    | Transaksi dibatalkan hilang dari laporan tapi masih ada di riwayat |
-
-Tahap 3 yang paling menentukan. Kalau pembekuan data di situ salah, tahap-tahap berikutnya ikut salah dan baru ketahuan setelah datanya banyak.
+| Tidak dibuat        | Alasan                                        |
+| ------------------- | --------------------------------------------- |
+| Manajemen stok      | Butuh data pcs yang akurat dulu               |
+| Multi-outlet        | Belum ada kebutuhan                           |
+| Mode offline        | Rumit, belum sepadan                          |
+| Resep/BOM per gram  | Input produk jadi belasan menit per item      |
+| Diskon & promo      | Lapisan hitungan tambahan, ditunda            |
+| Metode bayar non-tunai | Belum dibutuhkan; hanya `dibayar` tunai    |
+| Cetak thermal ESC/POS | Cetak lewat dialog browser sudah cukup      |
 
 ---
 
-## 9. Kriteria selesai
+## 8. Kriteria selesai
 
-Prototipe dianggap berhasil kalau **uji pembekuan harga** ini lolos:
+**Uji pembekuan harga** — masih kriteria utama:
 
-1. Buat transaksi: Dimsum Mentai Isi 4, harga 20.000
-2. Buka `/produk`, ubah harga Isi 4 jadi 22.000
-3. Buka kembali struk tadi di `/transaksi`
+1. Buat transaksi Dimsum Mentai isi 4 seharga 20.000
+2. Ubah harga varian itu jadi 22.000
+3. Buka nota tadi di riwayat → **harus tetap 20.000**
 
-**Struk harus tetap menampilkan 20.000.** Kalau berubah jadi 22.000, berarti pembekuannya gagal dan harus diperbaiki sebelum lanjut.
+Uji lain:
 
-Uji tambahan:
-
-- [ ] Ubah harga mika di `/kemasan` → HPP semua varian yang memakainya ikut berubah
-- [ ] Transaksi dibatalkan tidak masuk `/laporan`, tapi masih terlihat di `/transaksi`
-- [ ] Total di layar kasir sama persis dengan hitungan manual
-- [ ] Produk dinonaktifkan hilang dari kasir, tapi struk lamanya masih terbaca
+- [ ] Ubah harga mika → HPP semua varian pemakainya ikut berubah
+- [ ] Transaksi dibatalkan hilang dari laporan, tetap ada di riwayat
+- [ ] Kasir tidak bisa membuka `/APP/admin/*` lewat URL langsung
+- [ ] Kasir hanya melihat notanya sendiri di riwayat
+- [ ] Setor omzet dua kali tetap menghasilkan satu baris
+- [ ] Extra dengan margin ≠ 0 terpisah benar antara omzet dan modalnya
 
 ---
 
-## 10. Data yang masih harus kamu isi sendiri
+## 9. Yang masih harus diisi
 
-Semua angka modal di file skema masih tebakan. Sebelum laporannya bisa dipercaya:
-
-- [ ] `modal_bahan` tiap varian — hitung dari sekali produksi: habis berapa, dapat berapa pcs
-- [ ] `harga_satuan` tiap kemasan — mika kecil, mika besar, cup sambal, sendok, kantong
-- [ ] `tambahan_modal` chili oil per varian — sekali bikin sambal habis berapa, dapat berapa cup
-- [ ] `jumlah_pcs` untuk Dimsum Goreng Keju Lumer — belum diketahui, menu tidak menyebutkan
-- [ ] `tambahan_harga` chili oil = **5.000 di semua varian**, sesuai menu cetak
-
-Item terakhir sudah pasti. Empat lainnya butuh kamu turun ke dapur sekali.
+- [ ] `modal_bahan` tiap varian — dari sekali produksi nyata
+- [ ] `harga_satuan` tiap kemasan
+- [ ] `upah_per_pcs` tiap produk
+- [ ] `tambahan_modal` tiap extra
+- [ ] Identitas toko di `src/constants/nota-constant.ts` (masih contoh)
+- [ ] `title` di `src/app/layout.tsx` (masih bawaan Next)

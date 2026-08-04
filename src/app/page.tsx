@@ -1,27 +1,20 @@
-import Link from "next/link";
-import { LogInIcon } from "lucide-react";
+import { redirect } from "next/navigation";
 
-import { CurrentUser } from "@/components/common/current-user";
-import { ModeToggle } from "@/components/common/mode-toggle";
-import { InstallPrompt } from "@/components/pwa/install-prompt";
-import { Button } from "@/components/ui/button";
+import { isManagerRole } from "@/lib/auth-guard";
+import { getAuthUser } from "@/servers/auth";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <div className="flex items-center gap-4">
-          <ModeToggle />
-          <InstallPrompt />
-          <CurrentUser />
-          <Button asChild>
-            <Link href="/auth/login">
-              <LogInIcon data-icon="inline-start" />
-              Masuk
-            </Link>
-          </Button>
-        </div>
-      </main>
-    </div>
+/**
+ * Bukan halaman, melainkan persimpangan: `proxy.ts` sudah memantulkan yang
+ * belum login, jadi siapa pun yang sampai di sini pasti punya sesi — dan
+ * halaman pendaratan berisi tombol "Masuk" cuma membuatnya mengira sesinya
+ * putus.
+ */
+export default async function Home() {
+  const user = await getAuthUser();
+
+  if (!user) redirect("/auth/login");
+
+  redirect(
+    isManagerRole(user.role) ? "/APP/admin/dashboard" : "/APP/cashier/order",
   );
 }
