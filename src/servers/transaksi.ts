@@ -13,9 +13,10 @@ function errorMessage(
   code: string | undefined,
   fallback: string,
   pesanDatabase?: string,
+  pesanAkses = "Kamu tidak punya akses mencatat transaksi.",
 ) {
   if (code === "P0001" && pesanDatabase) return pesanDatabase;
-  if (code === "42501") return "Kamu tidak punya akses mencatat transaksi.";
+  if (code === "42501") return pesanAkses;
   if (code === "23514") return "Ada nilai yang tidak masuk akal di keranjang.";
   if (code === "22003") return "Nilai transaksi terlalu besar.";
   return fallback;
@@ -56,4 +57,25 @@ export async function simpanTransaksi(
   }
 
   return { success: true, message: "Transaksi tersimpan.", id: data };
+}
+
+export async function batalkanTransaksi(
+  id: string,
+): Promise<TransaksiActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("batalkan_transaksi", { p_id: id });
+
+  if (error) {
+    return {
+      success: false,
+      message: errorMessage(
+        error.code,
+        `Gagal membatalkan: ${error.message}`,
+        error.message,
+        "Kamu tidak punya akses membatalkan transaksi.",
+      ),
+    };
+  }
+
+  return { success: true, message: "Transaksi dibatalkan.", id };
 }

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { getRiwayatTransaksi } from "@/clients/transaksi";
 import { RIWAYAT_TRANSAKSI_KEY } from "@/constants/cashier-constant";
-import { simpanTransaksi } from "@/servers/transaksi";
+import { batalkanTransaksi, simpanTransaksi } from "@/servers/transaksi";
 import type { TransaksiActionResult } from "@/types/cashier";
 import type { TransaksiInput } from "@/validations/cashier-validation";
 
@@ -19,6 +19,22 @@ export function useRiwayatTransaksi() {
   return useQuery({
     queryKey: RIWAYAT_TRANSAKSI_KEY,
     queryFn: getRiwayatTransaksi,
+  });
+}
+
+export function useBatalkanTransaksi(options?: { onSuccess?: () => void }) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => unwrap(await batalkanTransaksi(id)),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: RIWAYAT_TRANSAKSI_KEY });
+      toast.success(result.message);
+      options?.onSuccess?.();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 }
 

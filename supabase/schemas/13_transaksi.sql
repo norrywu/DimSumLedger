@@ -72,6 +72,25 @@ create policy "kasir_baca_transaksi_sendiri" on public.transaksi
   for select to authenticated
   using (kasir_id = (select auth.uid()));
 
+-- Jendela 10 menit. Salah pencet ketahuan dalam hitungan detik, jadi kasir
+-- tidak butuh lebih; yang dicegah adalah membatalkan nota lama saat toko sepi
+-- lalu mengambil tunainya — omzet ikut turun sehingga selisih laci tidak
+-- ketahuan. Lewat itu, pembatalan jadi wewenang pengelola.
+--
+-- `with check` mengunci arahnya satu jalur: kasir hanya bisa membuat baris
+-- menjadi 'dibatalkan', tidak bisa menghidupkannya kembali.
+create policy "kasir_batalkan_transaksi_baru" on public.transaksi
+  for update to authenticated
+  using (
+    kasir_id = (select auth.uid())
+    and status = 'selesai'
+    and created_at > now() - interval '10 minutes'
+  )
+  with check (
+    kasir_id = (select auth.uid())
+    and status = 'dibatalkan'
+  );
+
 create policy "baca_ikut_induk" on public.transaksi_item
   for select to authenticated
   using (exists (select 1 from public.transaksi t where t.id = transaksi_id));

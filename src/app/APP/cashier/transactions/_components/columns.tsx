@@ -1,5 +1,7 @@
+import { BanIcon, EyeIcon } from "lucide-react";
+
 import type { DataTableColumn } from "@/components/common/data-table-card";
-import { Button } from "@/components/ui/button";
+import { IconActionButton } from "@/components/common/icon-action-button";
 import { hitungKembalian } from "@/lib/count";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import type { RiwayatTransaksi } from "@/types/cashier";
@@ -8,8 +10,12 @@ const angka = "text-right tabular-nums";
 
 export function riwayatColumns({
   onLihat,
+  onBatalkan,
+  isBusy,
 }: {
   onLihat: (transaksi: RiwayatTransaksi) => void;
+  onBatalkan: (transaksi: RiwayatTransaksi) => void;
+  isBusy?: boolean;
 }): DataTableColumn<RiwayatTransaksi>[] {
   return [
     {
@@ -61,14 +67,24 @@ export function riwayatColumns({
       header: "",
       cellClassName: "text-right",
       render: (row) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => onLihat(row)}
-        >
-          Lihat
-        </Button>
+        <div className="flex justify-end gap-1">
+          {/* Waktu ikut masuk label supaya pengguna screen reader tahu baris
+              mana yang dituju, bukan "Lihat" berulang belasan kali. */}
+          <IconActionButton
+            label={`Lihat transaksi ${formatDateTime(row.created_at)}`}
+            icon={<EyeIcon />}
+            onClick={() => onLihat(row)}
+          />
+          {row.status !== "dibatalkan" && (
+            <IconActionButton
+              label={`Batalkan transaksi ${formatDateTime(row.created_at)}`}
+              icon={<BanIcon />}
+              disabled={isBusy}
+              onClick={() => onBatalkan(row)}
+              className="text-destructive hover:text-destructive"
+            />
+          )}
+        </div>
       ),
     },
   ];

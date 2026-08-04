@@ -553,6 +553,7 @@ export type Database = {
       }
     }
     Functions: {
+      batalkan_transaksi: { Args: { p_id: string }; Returns: undefined }
       daftar_pengguna: {
         Args: never
         Returns: {
