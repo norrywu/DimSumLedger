@@ -4,6 +4,7 @@ import {
   Receipt,
   ShoppingCart,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import type { NavItem, NavItemsByRole } from "@/types/navigation";
@@ -30,6 +31,7 @@ const managerMenu: NavItem[] = [
       { title: "Laporan Penjualan", url: "/APP/admin/reports" },
     ],
   },
+  { title: "Arus Kas", url: "/APP/admin/cashflow", icon: Wallet },
   { title: "Pengguna", url: "/APP/admin/users", icon: Users },
 ];
 

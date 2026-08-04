@@ -34,6 +34,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      cash_flow: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          source: string
+          transaction_date: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          source?: string
+          transaction_date?: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          source?: string
+          transaction_date?: string
+          type?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -591,6 +624,7 @@ export type Database = {
           porsi: number
         }[]
       }
+      setor_omzet_harian: { Args: { p_tanggal: string }; Returns: number }
       simpan_transaksi: {
         Args: { p_dibayar: number; p_items: Json }
         Returns: string
