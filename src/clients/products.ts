@@ -16,7 +16,7 @@ export async function getProducts(): Promise<Product[]> {
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, nama, category_id, kategori:categories(nama)")
+    .select("id, nama, category_id, upah_per_pcs, kategori:categories(nama)")
     .order("nama");
 
   // react-query membedakan sukses dan gagal lewat lemparan, bukan nilai balik.

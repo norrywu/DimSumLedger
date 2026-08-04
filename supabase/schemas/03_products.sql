@@ -4,6 +4,13 @@ create table public.products (
   id          uuid        primary key default gen_random_uuid(),
   category_id uuid        not null references public.categories (id) on delete restrict,
   nama        text        not null,
+
+  -- Upah/reward per POTONG, bukan per porsi: yang dibayar adalah kerja membuat
+  -- tiap butir, jadi "isi 8" otomatis dua kali "isi 4" tanpa diisi ulang.
+  -- Diletakkan di produk, bukan varian, karena varian dari produk yang sama
+  -- adalah dimsum yang sama — hanya beda banyak isinya.
+  upah_per_pcs numeric(12,2) not null default 0 check (upah_per_pcs >= 0),
+
   created_at  timestamptz not null default now(),
 
   constraint products_nama_check

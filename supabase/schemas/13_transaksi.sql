@@ -39,10 +39,14 @@ create table public.transaksi_item (
 
   modal_bahan_satuan   numeric(12,2) not null check (modal_bahan_satuan   >= 0),
   modal_kemasan_satuan numeric(12,2) not null check (modal_kemasan_satuan >= 0),
+  modal_upah_satuan    numeric(12,2) not null default 0
+    check (modal_upah_satuan >= 0),
 
   -- Turunan, bukan angka yang disimpan sendiri: mustahil melenceng dari komponennya.
   hpp_satuan numeric(12,2) not null
-    generated always as (modal_bahan_satuan + modal_kemasan_satuan) stored,
+    generated always as (
+      modal_bahan_satuan + modal_kemasan_satuan + modal_upah_satuan
+    ) stored,
 
   qty          smallint      not null check (qty > 0)
 );

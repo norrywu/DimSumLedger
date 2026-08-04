@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { supabasePublishableKey, supabaseUrl } from "@/environments";
 
+import type { AppMetadata } from "@/types/auth";
+import { isManagerRole } from "../auth-guard";
+
+export const PREFIX_ADMIN = "/APP/admin";
+
+/** Layar utama kasir, tujuan pantulan saat yang bukan pengelola masuk /APP/admin. */
+export const BERANDA_KASIR = "/APP/cashier/order";
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -51,6 +59,24 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
+  }
+
+  // Penjagaan /APP/admin dikerjakan di sini, bukan hanya di layout: menurut
+  // dokumen Next 16, layout TIDAK dirender ulang saat berpindah rute karena
+  // Partial Rendering — jadi kasir yang berpindah dari halaman kasir ke halaman
+  // admin lewat tautan client-side tidak akan pernah melewati cek layout.
+  // Proxy dijalankan tiap request, termasuk permintaan RSC.
+  //
+  // Klaimnya sudah ditarik di atas untuk keperluan sesi, jadi cek ini tidak
+  // menambah satu pun perjalanan jaringan.
+  if (user && request.nextUrl.pathname.startsWith(PREFIX_ADMIN)) {
+    const appMetadata = user.app_metadata as AppMetadata | undefined;
+
+    if (!isManagerRole(appMetadata?.role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = BERANDA_KASIR;
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

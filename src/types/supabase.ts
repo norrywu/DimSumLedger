@@ -103,18 +103,21 @@ export type Database = {
           created_at: string
           id: string
           nama: string
+          upah_per_pcs: number
         }
         Insert: {
           category_id: string
           created_at?: string
           id?: string
           nama: string
+          upah_per_pcs?: number
         }
         Update: {
           category_id?: string
           created_at?: string
           id?: string
           nama?: string
+          upah_per_pcs?: number
         }
         Relationships: [
           {
@@ -206,6 +209,7 @@ export type Database = {
           jumlah_pcs: number | null
           modal_bahan_satuan: number
           modal_kemasan_satuan: number
+          modal_upah_satuan: number
           nama_produk: string
           nama_varian: string
           qty: number
@@ -219,6 +223,7 @@ export type Database = {
           jumlah_pcs?: number | null
           modal_bahan_satuan: number
           modal_kemasan_satuan: number
+          modal_upah_satuan?: number
           nama_produk: string
           nama_varian: string
           qty: number
@@ -232,6 +237,7 @@ export type Database = {
           jumlah_pcs?: number | null
           modal_bahan_satuan?: number
           modal_kemasan_satuan?: number
+          modal_upah_satuan?: number
           nama_produk?: string
           nama_varian?: string
           qty?: number
@@ -464,6 +470,7 @@ export type Database = {
           modal_bahan: number | null
           modal_kemasan: number | null
           modal_total: number | null
+          modal_upah: number | null
           nama: string | null
           product_id: string | null
           produk_nama: string | null
@@ -504,10 +511,13 @@ export type Database = {
           modal_extra: number | null
           modal_kemasan: number | null
           modal_kemasan_satuan: number | null
+          modal_upah: number | null
+          modal_upah_satuan: number | null
           nama_produk: string | null
           nama_varian: string | null
           omzet: number | null
           pakai_extra: boolean | null
+          pcs: number | null
           qty: number | null
           status: string | null
           transaksi_id: string | null
@@ -573,9 +583,11 @@ export type Database = {
           modal_bahan: number
           modal_extra: number
           modal_kemasan: number
+          modal_upah: number
           nama_produk: string
           nama_varian: string
           omzet: number
+          pcs: number
           porsi: number
         }[]
       }

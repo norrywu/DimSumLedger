@@ -8,19 +8,26 @@ export function hitungHppVarian({
   hargaJual,
   modalBahan,
   kemasan,
+  jumlahPcs = 0,
+  upahPerPcs = 0,
 }: {
   hargaJual: number;
   modalBahan: number;
 
   kemasan: { hargaSatuan: number; jumlah: number }[];
+
+  /** Keduanya opsional dan default 0: varian boleh belum punya jumlah pcs. */
+  jumlahPcs?: number;
+  upahPerPcs?: number;
 }) {
   const modalKemasan = kemasan.reduce(
     (jumlahnya, baris) => jumlahnya + baris.hargaSatuan * baris.jumlah,
     0,
   );
-  const modalTotal = modalBahan + modalKemasan;
+  const modalUpah = jumlahPcs * upahPerPcs;
+  const modalTotal = modalBahan + modalKemasan + modalUpah;
 
-  return { modalKemasan, modalTotal, margin: hargaJual - modalTotal };
+  return { modalKemasan, modalUpah, modalTotal, margin: hargaJual - modalTotal };
 }
 
 export function hitungKeranjang({

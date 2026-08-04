@@ -25,6 +25,7 @@ with (security_invoker = true) as
          ti.harga_satuan,
          ti.modal_bahan_satuan,
          ti.modal_kemasan_satuan,
+         ti.modal_upah_satuan,
          ti.hpp_satuan,
          coalesce(x.extra_harga, 0) as extra_harga_satuan,
          coalesce(x.extra_modal, 0) as extra_modal_satuan,
@@ -33,7 +34,9 @@ with (security_invoker = true) as
 
          ti.modal_bahan_satuan      * ti.qty as modal_bahan,
          ti.modal_kemasan_satuan    * ti.qty as modal_kemasan,
+         ti.modal_upah_satuan       * ti.qty as modal_upah,
          coalesce(x.extra_modal, 0) * ti.qty as modal_extra,
+         coalesce(ti.jumlah_pcs, 0) * ti.qty as pcs,
 
          (ti.harga_satuan + coalesce(x.extra_harga, 0)) * ti.qty as omzet,
          (ti.hpp_satuan   + coalesce(x.extra_modal, 0)) * ti.qty as modal,

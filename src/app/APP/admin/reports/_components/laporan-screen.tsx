@@ -13,11 +13,13 @@ import { laporanColumns } from "./columns";
 
 const KOSONG = {
   porsi: 0,
+  pcs: 0,
   omzet: 0,
   modal: 0,
   laba: 0,
   bahan: 0,
   kemasan: 0,
+  upah: 0,
   extra: 0,
 };
 
@@ -25,11 +27,13 @@ function jumlahkan(rows: BarisLaporan[]) {
   return rows.reduce(
     (total, row) => ({
       porsi: total.porsi + row.porsi,
+      pcs: total.pcs + row.pcs,
       omzet: total.omzet + row.omzet,
       modal: total.modal + row.modal,
       laba: total.laba + row.laba,
       bahan: total.bahan + row.modal_bahan,
       kemasan: total.kemasan + row.modal_kemasan,
+      upah: total.upah + row.modal_upah,
       extra: total.extra + row.modal_extra,
     }),
     KOSONG,
@@ -80,16 +84,25 @@ export function LaporanScreen() {
           className="w-48"
         />
         <span className="text-sm text-muted-foreground tabular-nums">
-          {total.porsi} porsi terjual
+          {total.porsi} porsi · {total.pcs} pcs terjual
         </span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Tile label="Omzet" nilai={formatCurrency(total.omzet)} />
         <Tile
           label="Modal"
           nilai={formatCurrency(total.modal)}
           keterangan={`Bahan ${formatCurrency(total.bahan)} · Kemasan ${formatCurrency(total.kemasan)} · Extra ${formatCurrency(total.extra)}`}
+        />
+        <Tile
+          label="Upah"
+          nilai={formatCurrency(total.upah)}
+          keterangan={
+            total.pcs > 0
+              ? `${total.pcs} pcs · sudah termasuk di Modal`
+              : undefined
+          }
         />
         <Tile
           label="Laba"

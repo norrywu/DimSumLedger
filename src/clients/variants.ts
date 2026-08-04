@@ -7,7 +7,7 @@ export async function getVariants(): Promise<Variant[]> {
   const { data, error } = await supabase
     .from("v_hpp_varian")
     .select(
-      "id, product_id, nama, jumlah_pcs, harga_jual, modal_bahan, aktif, produk_nama, modal_kemasan, modal_total, margin, kemasan",
+      "id, product_id, nama, jumlah_pcs, harga_jual, modal_bahan, aktif, produk_nama, modal_kemasan, modal_upah, modal_total, margin, kemasan",
     )
     .order("produk_nama")
     .order("nama");

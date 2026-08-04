@@ -16,6 +16,9 @@ export type Variant = Pick<
 
   modal_kemasan: number;
 
+  /** `jumlah_pcs × products.upah_per_pcs`; 0 bila pcs-nya belum diisi. */
+  modal_upah: number;
+
   modal_total: number;
 
   margin: number;

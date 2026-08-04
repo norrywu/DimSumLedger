@@ -10,6 +10,7 @@ import { useCreateProduct, useUpdateProduct } from "@/hooks/use-products";
 import type { Product } from "@/types/products";
 import {
   productSchema,
+  type ProductFormValues,
   type ProductInput,
 } from "@/validations/products-validation";
 
@@ -61,7 +62,7 @@ export function ProductFormSheet({
   };
 
   return (
-    <TriggerSheet<ProductInput>
+    <TriggerSheet<ProductFormValues, ProductInput>
       open={open}
       onOpenChange={onOpenChange}
       fields={productFields(categoryOptions)}
@@ -82,6 +83,7 @@ export function ProductFormSheet({
           ? {
               nama: target.product.nama,
               category_id: target.product.category_id,
+              upah_per_pcs: target.product.upah_per_pcs.toString(),
             }
           : PRODUCT_FORM_DEFAULTS
       }

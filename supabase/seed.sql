@@ -51,10 +51,10 @@ insert into public.packagings (id, nama, harga_satuan) values
   ('3ec32796-e4c4-4a9a-a8c0-c26e3d1534c4', 'mika', 100)
 on conflict do nothing;
 
-insert into public.products (id, category_id, nama) values
+insert into public.products (id, category_id, nama, upah_per_pcs) values
   ('9c886484-3d46-43cc-ae2a-fe21a46a017b',
    '2602965a-789c-4ccc-b112-56d2a5cb34a7',
-   'dimsum mentai')
+   'dimsum mentai', 500)
 on conflict do nothing;
 
 insert into public.variants
@@ -70,10 +70,12 @@ insert into public.variant_packagings (variant_id, packaging_id, jumlah) values
    1)
 on conflict do nothing;
 
-insert into public.products (id, category_id, nama) values
+-- Tarif berbeda dari mentai supaya laporan menguji bahwa upah benar-benar
+-- mengikuti produknya, bukan satu angka global.
+insert into public.products (id, category_id, nama, upah_per_pcs) values
   ('7b2f1c40-2a55-4f0e-9a71-4c1d2f8e6b31',
    '2602965a-789c-4ccc-b112-56d2a5cb34a7',
-   'dimsum ayam')
+   'dimsum ayam', 400)
 on conflict do nothing;
 
 insert into public.variants

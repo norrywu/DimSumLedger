@@ -4,6 +4,7 @@ import { PencilIcon, Trash2Icon } from "lucide-react";
 
 import type { DataTableColumn } from "@/components/common/data-table-card";
 import { IconActionButton } from "@/components/common/icon-action-button";
+import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/types/products";
 
 /**
@@ -34,6 +35,12 @@ export function productColumns({
       header: "Kategori",
       cellClassName: "text-muted-foreground",
       render: (row) => row.kategori_nama,
+    },
+    {
+      header: "Upah/pcs",
+      headClassName: "text-right",
+      cellClassName: "text-right tabular-nums",
+      render: (row) => formatCurrency(row.upah_per_pcs),
     },
     {
       header: "Aksi",

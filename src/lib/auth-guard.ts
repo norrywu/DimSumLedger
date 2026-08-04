@@ -1,27 +1,17 @@
 import "server-only";
 
+import { redirect } from "next/navigation";
+
 import { getAuthUser } from "@/servers/auth";
 import type { AuthUser, UserRole } from "@/types/auth";
+import { BERANDA_KASIR } from "./supabase/proxy";
 
-/**
- * Sama persis dengan daftar di `internal.is_pengelola()`
- * (`supabase/schemas/001_helpers.sql`). Kalau yang di SQL berubah, yang ini
- * ikut.
- */
-const MANAGER_ROLES: readonly UserRole[] = ["owner", "admin"];
+export const MANAGER_ROLES: readonly UserRole[] = ["owner", "admin"];
 
-/**
- * Padanan TypeScript dari `internal.is_pengelola()`, untuk jalur yang tidak
- * lewat RLS.
- *
- * Fitur yang menulis lewat browser client cukup bersandar pada policy tabelnya.
- * Yang memakai `createAdminClient()` tidak punya sandaran itu sama sekali —
- * kunci rahasia menembus semua policy — jadi keputusannya harus diambil di
- * kode, dan diambil dari SESI, bukan dari argumen yang dikirim client.
- *
- * Mengembalikan `null`, bukan melempar, supaya pemanggilnya bisa menyusun
- * `{ success: false, message }` seperti kegagalan lain.
- */
+export function isManagerRole(role: string | null | undefined): boolean {
+  return MANAGER_ROLES.includes(role as UserRole);
+}
+
 export async function getManager(): Promise<AuthUser | null> {
   const user = await getAuthUser();
 
@@ -29,7 +19,27 @@ export async function getManager(): Promise<AuthUser | null> {
   // bisa ditulis service role lewat trigger `internal.sync_profile_to_auth`.
   // `user_metadata` tidak bisa dipakai di sini: pengguna boleh mengubahnya
   // sendiri lewat `supabase.auth.updateUser()`.
-  if (!user?.role || !MANAGER_ROLES.includes(user.role)) return null;
+  if (!isManagerRole(user?.role)) return null;
+
+  return user;
+}
+
+/**
+ * Versi halaman dari `getManager()`: memantulkan, bukan mengembalikan `null`.
+ *
+ * Dua tujuan pantulan yang berbeda disengaja. Belum login → halaman login.
+ * Sudah login tapi kasir → beranda kasir, karena melempar orang yang JELAS
+ * sudah masuk ke form login hanya bikin dia mengira sesinya putus.
+ *
+ * Ini lapisan pengalaman, bukan batas keamanan. Batas sesungguhnya ada di RLS:
+ * seandainya halaman ini lolos dirender, tiap query di dalamnya tetap kosong
+ * atau ditolak database.
+ */
+export async function requireManager(): Promise<AuthUser> {
+  const user = await getAuthUser();
+
+  if (!user) redirect("/auth/login");
+  if (!isManagerRole(user.role)) redirect(BERANDA_KASIR);
 
   return user;
 }

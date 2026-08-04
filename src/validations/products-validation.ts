@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { currencyField } from "@/validations/shared-validation";
+
 /**
  * Sumber kebenaran validasi produk, dipakai `TriggerSheet` di browser dan
  * Server Action di server. Batas 50 karakter disamakan dengan
@@ -15,6 +17,12 @@ export const productSchema = z.object({
   // Nilai awalnya string kosong karena Radix Select belum tersentuh, jadi
   // pesan bawaan soal format uuid diganti kalimat yang berarti bagi pengguna.
   category_id: z.uuid("Kategori wajib dipilih."),
+  // Per POTONG, bukan per porsi — varian "isi 8" otomatis dua kali "isi 4".
+  upah_per_pcs: currencyField("Upah per pcs"),
 });
 
-export type ProductInput = z.infer<typeof productSchema>;
+/** Isi form apa adanya; `<Input type="number">` selalu mengembalikan string. */
+export type ProductFormValues = z.input<typeof productSchema>;
+
+/** Hasil setelah transform — ini yang dikirim ke database. */
+export type ProductInput = z.output<typeof productSchema>;

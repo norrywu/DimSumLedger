@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePackagings } from "@/hooks/use-packagings";
+import { useProducts } from "@/hooks/use-products";
 import { formatCurrency } from "@/lib/utils";
 import type {
   VariantFormValues,
@@ -32,6 +33,7 @@ type VariantForm = UseFormReturn<VariantFormValues, unknown, VariantInput>;
 
 export function VariantPackagingsField({ form }: { form: VariantForm }) {
   const { data: packagings } = usePackagings();
+  const { data: products } = useProducts();
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -41,17 +43,27 @@ export function VariantPackagingsField({ form }: { form: VariantForm }) {
   const kemasan = useWatch({ control: form.control, name: "kemasan" });
   const hargaJual = useWatch({ control: form.control, name: "harga_jual" });
   const modalBahan = useWatch({ control: form.control, name: "modal_bahan" });
+  const jumlahPcs = useWatch({ control: form.control, name: "jumlah_pcs" });
+  const productId = useWatch({ control: form.control, name: "product_id" });
 
   const hargaKemasan = (packagingId: string | undefined) =>
     packagings?.find((item) => item.id === packagingId)?.harga_satuan ?? 0;
 
-  const { modalKemasan, modalTotal, margin } = hitungHppVarian({
+  // Tarif upah milik PRODUK induknya, jadi pratinjau di sini harus ikut
+  // mengambilnya — kalau tidak, angka modal di form lebih kecil daripada yang
+  // nanti dihitung `v_hpp_varian`.
+  const upahPerPcs =
+    products?.find((item) => item.id === productId)?.upah_per_pcs ?? 0;
+
+  const { modalKemasan, modalUpah, modalTotal, margin } = hitungHppVarian({
     hargaJual: keAngka(hargaJual),
     modalBahan: keAngka(modalBahan),
     kemasan: (kemasan ?? []).map((baris) => ({
       hargaSatuan: hargaKemasan(baris?.packaging_id),
       jumlah: keAngka(baris?.jumlah),
     })),
+    jumlahPcs: keAngka(jumlahPcs),
+    upahPerPcs: keAngka(upahPerPcs),
   });
 
   const terpakai = new Set(
@@ -134,6 +146,7 @@ export function VariantPackagingsField({ form }: { form: VariantForm }) {
 
       <div className="mt-2 grid gap-1 rounded-md border p-3 text-sm">
         <BarisRingkasan label="Modal kemasan" nilai={modalKemasan} />
+        <BarisRingkasan label="Modal upah" nilai={modalUpah} />
         <BarisRingkasan label="Modal total" nilai={modalTotal} />
         <div className="flex justify-between border-t pt-1 font-medium">
           <span>Margin</span>

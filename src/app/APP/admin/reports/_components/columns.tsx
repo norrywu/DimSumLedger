@@ -14,6 +14,18 @@ export const laporanColumns: DataTableColumn<BarisLaporan>[] = [
     render: (row) => row.porsi,
   },
   {
+    header: "Pcs",
+    headClassName: angka,
+    cellClassName: angka,
+    render: (row) => row.pcs,
+  },
+  {
+    header: "Upah",
+    headClassName: angka,
+    cellClassName: angka,
+    render: (row) => formatCurrency(row.modal_upah),
+  },
+  {
     header: "Omzet",
     headClassName: angka,
     cellClassName: angka,

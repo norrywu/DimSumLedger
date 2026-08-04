@@ -11,7 +11,7 @@ import type { Tables } from "@/types/supabase";
  */
 export type Product = Pick<
   Tables<"products">,
-  "id" | "nama" | "category_id"
+  "id" | "nama" | "category_id" | "upah_per_pcs"
 > & {
   /** Diratakan dari embed `categories(nama)`; lihat `getProducts`. */
   kategori_nama: string;

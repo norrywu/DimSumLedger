@@ -18,9 +18,11 @@ returns table (
   nama_produk   text,
   nama_varian   text,
   porsi         bigint,
+  pcs           bigint,
   omzet         numeric,
   modal_bahan   numeric,
   modal_kemasan numeric,
+  modal_upah    numeric,
   modal_extra   numeric,
   modal         numeric,
   laba          numeric
@@ -33,9 +35,11 @@ as $$
   select v.nama_produk,
          v.nama_varian,
          sum(v.qty)::bigint,
+         sum(v.pcs)::bigint,
          sum(v.omzet),
          sum(v.modal_bahan),
          sum(v.modal_kemasan),
+         sum(v.modal_upah),
          sum(v.modal_extra),
          sum(v.modal),
          sum(v.laba)

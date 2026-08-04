@@ -1,6 +1,6 @@
 import type { SheetField } from "@/components/sheet-trigger";
 import type { SelectOption } from "@/types/form";
-import type { ProductInput } from "@/validations/products-validation";
+import type { ProductFormValues } from "@/validations/products-validation";
 
 /**
  * Query key react-query, dikumpulkan supaya komponen yang membaca dan yang
@@ -23,7 +23,11 @@ export const PRODUCTS_KEY = ["products"];
  * mengendalikan nilainya lewat `field.value ?? ""`, dan react-hook-form
  * menganggap field tanpa nilai awal sebagai uncontrolled.
  */
-export const PRODUCT_FORM_DEFAULTS: ProductInput = { nama: "", category_id: "" };
+export const PRODUCT_FORM_DEFAULTS: ProductFormValues = {
+  nama: "",
+  category_id: "",
+  upah_per_pcs: "",
+};
 
 /**
  * Fungsi, bukan konstanta seperti `PROFILE_FIELDS`, karena pilihan kategori
@@ -32,7 +36,7 @@ export const PRODUCT_FORM_DEFAULTS: ProductInput = { nama: "", category_id: "" }
  */
 export function productFields(
   categoryOptions: SelectOption[],
-): SheetField<ProductInput>[] {
+): SheetField<ProductFormValues>[] {
   return [
     { name: "nama", label: "Nama produk", placeholder: "mis. Dimsum Mentai" },
     {
@@ -41,6 +45,12 @@ export function productFields(
       type: "select",
       placeholder: "Pilih kategori",
       options: categoryOptions,
+    },
+    {
+      name: "upah_per_pcs",
+      label: "Upah per pcs",
+      type: "number",
+      placeholder: "mis. 500",
     },
   ];
 }

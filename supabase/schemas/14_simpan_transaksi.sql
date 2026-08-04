@@ -50,7 +50,7 @@ begin
     end if;
 
     select h.nama, h.produk_nama, h.jumlah_pcs,
-           h.harga_jual, h.modal_bahan, h.modal_kemasan, h.aktif
+           h.harga_jual, h.modal_bahan, h.modal_kemasan, h.modal_upah, h.aktif
       into v_varian
       from public.v_hpp_varian h
      where h.id = (v_baris->>'variant_id')::uuid;
@@ -65,11 +65,13 @@ begin
 
     insert into public.transaksi_item
       (transaksi_id, variant_id, nama_produk, nama_varian, jumlah_pcs,
-       harga_satuan, modal_bahan_satuan, modal_kemasan_satuan, qty)
+       harga_satuan, modal_bahan_satuan, modal_kemasan_satuan,
+       modal_upah_satuan, qty)
     values
       (v_transaksi_id, (v_baris->>'variant_id')::uuid, v_varian.produk_nama,
        v_varian.nama, v_varian.jumlah_pcs, v_varian.harga_jual,
-       v_varian.modal_bahan, v_varian.modal_kemasan, v_qty)
+       v_varian.modal_bahan, v_varian.modal_kemasan, v_varian.modal_upah,
+       v_qty)
     returning id into v_item_id;
 
     insert into public.transaksi_item_modifier

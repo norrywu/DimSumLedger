@@ -10,8 +10,13 @@ with (security_invoker = true) as
          v.aktif,
          p.nama as produk_nama,
          coalesce(k.modal_kemasan, 0) as modal_kemasan,
-         v.modal_bahan + coalesce(k.modal_kemasan, 0) as modal_total,
-         v.harga_jual - v.modal_bahan - coalesce(k.modal_kemasan, 0) as margin,
+         -- `jumlah_pcs` boleh null (varian yang belum diisi isinya). Null di
+         -- sini berarti upahnya nol, bukan seluruh modal ikut jadi null.
+         coalesce(v.jumlah_pcs, 0) * p.upah_per_pcs as modal_upah,
+         v.modal_bahan + coalesce(k.modal_kemasan, 0)
+           + coalesce(v.jumlah_pcs, 0) * p.upah_per_pcs as modal_total,
+         v.harga_jual - v.modal_bahan - coalesce(k.modal_kemasan, 0)
+           - coalesce(v.jumlah_pcs, 0) * p.upah_per_pcs as margin,
          coalesce(k.kemasan, '[]'::jsonb) as kemasan
     from public.variants v
     join public.products p on p.id = v.product_id
