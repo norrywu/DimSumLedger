@@ -23,4 +23,5 @@ create policy "pengelola_akses_penuh" on public.products
   using (internal.is_pengelola())
   with check (internal.is_pengelola());
 
+revoke all on table public.products from anon, authenticated;
 grant select, insert, update, delete on table public.products to authenticated;

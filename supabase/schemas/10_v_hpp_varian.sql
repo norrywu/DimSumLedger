@@ -29,5 +29,5 @@ with (security_invoker = true) as
     ) k on true;
 
 
-revoke all on public.v_hpp_varian from anon, public;
+revoke all on public.v_hpp_varian from anon, authenticated, public;
 grant select on public.v_hpp_varian to authenticated;

@@ -22,5 +22,5 @@ create policy "pengelola_akses_penuh" on public.categories
   using (internal.is_pengelola())
   with check (internal.is_pengelola());
 
--- Tanpa GRANT, tabel tidak bisa disentuh lewat Data API sama sekali.
+revoke all on table public.categories from anon, authenticated;
 grant select, insert, update, delete on table public.categories to authenticated;

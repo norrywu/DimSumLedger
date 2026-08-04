@@ -14,5 +14,5 @@ with (security_invoker = false) as
     join public.categories k on k.id = p.category_id
    where v.aktif;
 
-revoke all on public.katalog_jual from anon, public;
+revoke all on public.katalog_jual from anon, authenticated, public;
 grant select on public.katalog_jual to authenticated;

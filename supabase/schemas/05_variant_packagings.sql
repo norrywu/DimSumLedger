@@ -19,4 +19,5 @@ create policy "pengelola_akses_penuh" on public.variant_packagings
   using (internal.is_pengelola())
   with check (internal.is_pengelola());
 
+revoke all on table public.variant_packagings from anon, authenticated;
 grant select, insert, update, delete on table public.variant_packagings to authenticated;

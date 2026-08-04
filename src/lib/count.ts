@@ -22,3 +22,24 @@ export function hitungHppVarian({
 
   return { modalKemasan, modalTotal, margin: hargaJual - modalTotal };
 }
+
+export function hitungKeranjang({
+  items,
+}: {
+  items: {
+    hargaSatuan: number;
+    qty: number;
+    extra: { tambahanHarga: number }[];
+  }[];
+}) {
+  const total = items.reduce((jumlahnya, item) => {
+    const tambahan = item.extra.reduce(
+      (nilai, baris) => nilai + baris.tambahanHarga,
+      0,
+    );
+
+    return jumlahnya + (item.hargaSatuan + tambahan) * item.qty;
+  }, 0);
+
+  return { total };
+}

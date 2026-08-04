@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Grants
-GRANT ALL ON public.profiles TO authenticated;
+REVOKE ALL ON public.profiles FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 
 -- Policies
