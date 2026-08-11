@@ -12,26 +12,73 @@ interface NotaCetakProps {
   transaksi: RiwayatTransaksi | null;
 }
 
-/** Component Barcode SVG sederhana untuk struk cetak browser */
-function NotaBarcode({ value }: { value: string }) {
-  const clean = value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
-  const bars: boolean[] = [];
+const CODE39_PATTERNS: Record<string, string> = {
+  "0": "101001101101",
+  "1": "110100101011",
+  "2": "101100101011",
+  "3": "110110010101",
+  "4": "101001101011",
+  "5": "110100110101",
+  "6": "101100110101",
+  "7": "101001011011",
+  "8": "110100101101",
+  "9": "101100101101",
+  A: "110101001011",
+  B: "101101001011",
+  C: "110110100101",
+  D: "101011001011",
+  E: "110101100101",
+  F: "101101100101",
+  G: "101010011011",
+  H: "110101001101",
+  I: "101101001101",
+  J: "101011001101",
+  K: "110101010011",
+  L: "101101010011",
+  M: "110110101001",
+  N: "101011010011",
+  O: "110101101001",
+  P: "101101101001",
+  Q: "101010110011",
+  R: "110101011001",
+  S: "101101011001",
+  T: "101011011001",
+  U: "110010101011",
+  V: "100110101011",
+  W: "110011010101",
+  X: "100101101011",
+  Y: "110010110101",
+  Z: "100110110101",
+  "-": "100101011011",
+  ".": "110010101101",
+  " ": "100110101101",
+  "*": "100101101101",
+};
 
-  for (let i = 0; i < clean.length; i++) {
-    const code = clean.charCodeAt(i);
-    for (let b = 0; b < 6; b++) {
-      bars.push(((code >> b) & 1) === 1);
-    }
+/** Component Barcode Code39 SVG standar untuk struk cetak browser */
+function NotaBarcode({ value }: { value: string }) {
+  const clean = value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10).toUpperCase();
+  if (!clean) return null;
+
+  const fullCode = `*${clean}*`;
+  let bitPattern = "";
+  for (const char of fullCode) {
+    const pattern = CODE39_PATTERNS[char] || CODE39_PATTERNS["*"];
+    bitPattern += pattern + "0";
   }
 
   return (
-    <div className="mt-3 flex flex-col items-center">
-      <svg className="h-9 w-40" viewBox={`0 0 ${bars.length * 3} 30`}>
-        {bars.map((isDark, idx) =>
-          isDark ? (
+    <div className="mt-4 flex flex-col items-center justify-center">
+      <svg
+        className="h-8 w-44"
+        viewBox={`0 0 ${bitPattern.length * 2} 30`}
+        preserveAspectRatio="none"
+      >
+        {bitPattern.split("").map((bit, idx) =>
+          bit === "1" ? (
             <rect
               key={idx}
-              x={idx * 3}
+              x={idx * 2}
               y="0"
               width="2"
               height="30"
@@ -40,7 +87,7 @@ function NotaBarcode({ value }: { value: string }) {
           ) : null,
         )}
       </svg>
-      <span className="mt-0.5 text-[9px] font-mono text-black tracking-widest uppercase">
+      <span className="mt-1 text-[9px] font-mono text-black tracking-widest">
         *{clean}*
       </span>
     </div>

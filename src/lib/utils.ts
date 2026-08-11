@@ -16,7 +16,9 @@ export function formatCurrency(value: number) {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
-  }).format(value);
+  })
+    .format(value)
+    .replace(/\u00a0/g, " ");
 }
 
 /**
