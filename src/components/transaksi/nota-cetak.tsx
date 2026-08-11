@@ -2,6 +2,7 @@ import {
   NOTA_TOKO,
   NOTA_UKURAN,
   NOTA_UKURAN_SPEK,
+  PRINTER_MP58N,
 } from "@/constants/nota-constant";
 import { hitungKembalian } from "@/lib/count";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
@@ -9,6 +10,41 @@ import type { RiwayatTransaksi } from "@/types/cashier";
 
 interface NotaCetakProps {
   transaksi: RiwayatTransaksi | null;
+}
+
+/** Component Barcode SVG sederhana untuk struk cetak browser */
+function NotaBarcode({ value }: { value: string }) {
+  const clean = value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+  const bars: boolean[] = [];
+
+  for (let i = 0; i < clean.length; i++) {
+    const code = clean.charCodeAt(i);
+    for (let b = 0; b < 6; b++) {
+      bars.push(((code >> b) & 1) === 1);
+    }
+  }
+
+  return (
+    <div className="mt-3 flex flex-col items-center">
+      <svg className="h-9 w-40" viewBox={`0 0 ${bars.length * 3} 30`}>
+        {bars.map((isDark, idx) =>
+          isDark ? (
+            <rect
+              key={idx}
+              x={idx * 3}
+              y="0"
+              width="2"
+              height="30"
+              fill="black"
+            />
+          ) : null,
+        )}
+      </svg>
+      <span className="mt-0.5 text-[9px] font-mono text-black tracking-widest uppercase">
+        *{clean}*
+      </span>
+    </div>
+  );
 }
 
 export function NotaCetak({ transaksi }: NotaCetakProps) {
@@ -38,9 +74,14 @@ export function NotaCetak({ transaksi }: NotaCetakProps) {
       </div>
 
       {/* Meta Transaksi */}
-      <div className="mt-3 flex justify-between border-y border-dashed border-black py-1 text-[11px]">
-        <span>{formatDateTime(transaksi.created_at)}</span>
-        <span>Kasir: {transaksi.kasir_nama}</span>
+      <div className="mt-3 flex flex-col gap-0.5 border-y border-dashed border-black py-1 text-[11px]">
+        <div className="flex justify-between">
+          <span>{formatDateTime(transaksi.created_at)}</span>
+          <span>Kasir: {transaksi.kasir_nama}</span>
+        </div>
+        <div className="text-[10px] text-gray-700 print:text-black">
+          ID: #{transaksi.id.slice(0, 8)}
+        </div>
       </div>
 
       {/* Status Batal */}
@@ -130,6 +171,9 @@ export function NotaCetak({ transaksi }: NotaCetakProps) {
           {NOTA_TOKO.penutup}
         </p>
       )}
+
+      {/* Barcode untuk Printer Thermal MP-58N */}
+      {PRINTER_MP58N.hasBarcode && <NotaBarcode value={transaksi.id} />}
     </div>
   );
 }

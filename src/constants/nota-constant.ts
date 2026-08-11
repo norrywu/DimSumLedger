@@ -8,11 +8,25 @@ export const NOTA_TOKO = {
 
 export type UkuranNota = "58mm" | "80mm" | "a4";
 
+export const PRINTER_MP58N = {
+  model: "MP-58N",
+  interface: "USB & Bluetooth",
+  bluetoothName: "RPP02N",
+  bluetoothPin: "0000",
+  cmdType: "ESC",
+  language: "PC850",
+  baudrate: 115200,
+  paperWidth: "58mm",
+  maxColumns: 32,
+  hasBarcode: true,
+  hasQr: true,
+} as const;
+
 /**
  * Ganti satu baris ini saat printernya berganti — tidak ada tempat lain yang
- * perlu disentuh.
+ * perlu disentuh. Disetel ke 58mm sesuai printer MP-58N.
  */
-export const NOTA_UKURAN: UkuranNota = "a4";
+export const NOTA_UKURAN: UkuranNota = "58mm";
 
 /**
  * `padding` ikut per ukuran karena `@page` dipasang `margin: 0` — seluruh jarak
