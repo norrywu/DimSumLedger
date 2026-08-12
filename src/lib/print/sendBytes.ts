@@ -4,7 +4,9 @@ export async function sendBytes(
   escData: Uint8Array,
   writableChar: BluetoothCharacteristic,
 ) {
-  const CHUNK_SIZE = 100;
+  // 20 bytes adalah ukuran payload MTU standar BLE tanpa negosiasi tambahan.
+  // Ini menjamin 100% data tidak terpotong di semua jenis printer BLE (lama maupun baru).
+  const CHUNK_SIZE = 20;
 
   for (let i = 0; i < escData.length; i += CHUNK_SIZE) {
     const chunk = escData.subarray(i, i + CHUNK_SIZE);

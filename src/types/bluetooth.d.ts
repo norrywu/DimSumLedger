@@ -3,11 +3,13 @@ export interface BluetoothCharacteristic {
     write?: boolean;
     writeWithoutResponse?: boolean;
   };
+  uuid: string;
   writeValueWithoutResponse?: (value: Uint8Array) => Promise<void>;
   writeValue?: (value: Uint8Array) => Promise<void>;
 }
 
 export interface BluetoothService {
+  uuid: string;
   getCharacteristics: () => Promise<BluetoothCharacteristic[]>;
 }
 
@@ -23,6 +25,8 @@ export interface BluetoothDeviceGatt {
 
 export interface BluetoothDevice {
   name?: string;
+  id?: string;
+  uuid?: string[];
   gatt?: BluetoothDeviceGatt;
 }
 
