@@ -17,9 +17,10 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { PRINTER_MP58N } from "@/constants/nota-constant";
 import { hitungKembalian } from "@/lib/count";
-import { printThermalBluetooth } from "@/lib/thermal-printer";
+
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import type { RiwayatTransaksi } from "@/types/cashier";
+import { printThermalBluetooth } from "@/lib/print/thermal-printer";
 
 function Baris({ label, nilai }: { label: string; nilai: string }) {
   return (
