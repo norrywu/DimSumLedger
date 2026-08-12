@@ -5,6 +5,13 @@ import { BluetoothIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -43,6 +50,12 @@ export function RiwayatDetailSheet({
   judul?: string;
 }) {
   const [isPrinting, setIsPrinting] = useState(false);
+  const [printerName, setPrinterName] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("last_bt_printer_name");
+    }
+    return null;
+  });
 
   const { kembalian } = hitungKembalian({
     total: transaksi?.total ?? 0,
@@ -52,10 +65,20 @@ export function RiwayatDetailSheet({
   const handlePrintBluetooth = async () => {
     if (!transaksi) return;
     setIsPrinting(true);
-    toast.info(`Mencari printer Bluetooth (${PRINTER_MP58N.bluetoothName})...`);
+    toast.info(
+      `Mencari printer Bluetooth ${printerName ? `(${printerName})` : "terdekat"}...`,
+    );
     try {
       const res = await printThermalBluetooth(transaksi);
+      if (res.cancelled) {
+        toast.info(res.message);
+        return;
+      }
       toast.success(res.message);
+      if (res.deviceName) {
+        setPrinterName(res.deviceName);
+        localStorage.setItem("last_bt_printer_name", res.deviceName);
+      }
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "Gagal mencetak via Bluetooth.";
@@ -135,29 +158,33 @@ export function RiwayatDetailSheet({
             </p>
           )}
 
-          {/* Info Printer Bluetooth MP-58N */}
-          <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs">
-            <div className="flex items-center justify-between font-semibold text-foreground">
-              <span>Printer Bluetooth: {PRINTER_MP58N.model}</span>
-              <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-mono text-primary">
-                {PRINTER_MP58N.paperWidth}
-              </span>
-            </div>
-            <div className="mt-1.5 grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+          {/* Info Printer Bluetooth Dynamic Card */}
+          <Card size="sm" className="bg-muted/40">
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle className="text-xs font-semibold text-foreground">
+                Printer Bluetooth: {printerName || "Deteksi Otomatis"}
+              </CardTitle>
+              <CardAction>
+                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-primary">
+                  {PRINTER_MP58N.paperWidth}
+                </span>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
               <div>
                 Nama Bluetooth:{" "}
                 <span className="font-mono font-medium text-foreground">
-                  {PRINTER_MP58N.bluetoothName}
+                  {printerName || "Terdeteksi saat cetak"}
                 </span>
               </div>
               <div>
                 PIN:{" "}
                 <span className="font-mono font-medium text-foreground">
-                  {PRINTER_MP58N.bluetoothPin}
+                  0000 / 1234
                 </span>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         <SheetFooter>
@@ -172,7 +199,8 @@ export function RiwayatDetailSheet({
             ) : (
               <BluetoothIcon data-icon="inline-start" />
             )}
-            Cetak Nota Bluetooth ({PRINTER_MP58N.bluetoothName})
+            Cetak Nota Bluetooth{" "}
+            {printerName ? `(${printerName})` : "(Deteksi Otomatis)"}
           </Button>
         </SheetFooter>
       </SheetContent>

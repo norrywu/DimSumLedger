@@ -38,7 +38,14 @@ export async function connectToBluetoothPrinter() {
       acceptAllDevices: true,
     });
   } catch (err) {
-    console.error("❌ Error in requestDevice:", err);
+    if (
+      err instanceof Error &&
+      (err.name === "NotFoundError" || err.message.includes("cancelled"))
+    ) {
+      console.log("ℹ️ Pemilihan perangkat Bluetooth dibatalkan pengguna.");
+    } else {
+      console.error("❌ Error in requestDevice:", err);
+    }
     throw err;
   }
 

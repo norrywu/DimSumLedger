@@ -17,14 +17,24 @@ export async function printThermalBluetooth(transaksi: RiwayatTransaksi) {
 
     return {
       success: true,
-      message: `Nota berhasil terkirim ke Bluetooth ${device.name}.`,
+      message: `Nota berhasil terkirim ke Bluetooth ${device.name || "Printer"}.`,
+      deviceName: device.name || "Printer Thermal",
     };
   } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.name === "NotFoundError" ||
+        err.message.includes("User cancelled") ||
+        err.message.includes("cancelled"))
+    ) {
+      return {
+        success: false,
+        cancelled: true,
+        message: "Pemilihan printer Bluetooth dibatalkan.",
+      };
+    }
     const errorMsg =
       err instanceof Error ? err.message : "Gagal mencetak via Bluetooth.";
-    if (errorMsg.includes("User cancelled") || errorMsg.includes("cancelled")) {
-      throw new Error("Pemilihan printer Bluetooth dibatalkan.");
-    }
     throw new Error(errorMsg);
   }
 }
