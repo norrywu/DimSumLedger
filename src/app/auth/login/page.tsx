@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/auth/login/_components/login-form";
 import { getAuthUser } from "@/servers/auth";
-import { GalleryVerticalEndIcon } from "lucide-react";
+import { siteConfig } from "@/configs/site";
+import { UtensilsCrossed } from "lucide-react";
 
 /**
  * Server Component sekarang — `"use client"` di sini tidak pernah dibutuhkan:
@@ -29,9 +30,9 @@ export default async function LoginPage() {
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <GalleryVerticalEndIcon className="size-4" />
+              <UtensilsCrossed className="size-4" />
             </div>
-            Acme Inc.
+            {siteConfig.company.name}
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">

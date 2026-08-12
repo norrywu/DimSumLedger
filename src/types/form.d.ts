@@ -29,6 +29,7 @@ export type PasswordInputProps<T extends FieldValues> = {
   control: Control<T>;
   name: Path<T>;
   label: string | ReactNode;
+  placeholder?: string;
   autoComplete?: string;
   labelSuffix?: ReactNode;
 };

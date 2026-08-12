@@ -16,6 +16,7 @@ export function PasswordInput<T extends FieldValues = FieldValues>({
   control,
   name,
   label,
+  placeholder,
   autoComplete,
   labelSuffix,
 }: PasswordInputProps<T>) {
@@ -37,6 +38,7 @@ export function PasswordInput<T extends FieldValues = FieldValues>({
               id={field.name}
               type={showPassword ? 'text' : 'password'}
               aria-invalid={fieldState.invalid}
+              placeholder={placeholder}
               autoComplete={autoComplete}
               className="pr-9"
             />

@@ -8,15 +8,8 @@ import { cn } from "@/lib/utils";
 import { FormField } from "@/components/common/form";
 import { PasswordInput } from "@/components/common/password-input";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldSeparator,
-} from "@/components/ui/field";
-import {
-  GITHUB_ICON_PATH,
   INITIAL_LOGIN_STATE,
   LOGIN_DEFAULT_VALUES,
 } from "@/constants/auth";
@@ -74,15 +67,8 @@ export function LoginForm({
           control={control}
           name="password"
           label="Password"
+          placeholder="••••••••"
           autoComplete="current-password"
-          labelSuffix={
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
-          }
         />
 
         {state.message && (
@@ -95,23 +81,6 @@ export function LoginForm({
           <Button type="submit" disabled={isPending}>
             {isPending ? "Memproses..." : "Login"}
           </Button>
-        </Field>
-
-        <FieldSeparator>Or continue with</FieldSeparator>
-
-        <Field>
-          <Button variant="outline" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d={GITHUB_ICON_PATH} fill="currentColor" />
-            </svg>
-            Login with GitHub
-          </Button>
-          <FieldDescription className="text-center">
-            Don&apos;t have an account?{" "}
-            <a href="#" className="underline underline-offset-4">
-              Sign up
-            </a>
-          </FieldDescription>
         </Field>
       </FieldGroup>
     </form>
