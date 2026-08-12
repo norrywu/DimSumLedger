@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useStore } from "zustand";
 
 import { createAuthStore, type AuthStore } from "@/store/auth-store";
@@ -22,6 +22,12 @@ export function AuthStoreProvider({
   // Compiler di project ini melarang membaca ref saat render — useState dengan
   // initializer memberi jaminan yang sama tanpa melanggar aturan itu.
   const [store] = useState(() => createAuthStore({ user }));
+
+  // Sinkronkan data user ke dalam store saat prop user dari server berubah
+  // (misalnya setelah login/logout via client-side router navigation).
+  useEffect(() => {
+    store.setState({ user });
+  }, [store, user]);
 
   return (
     <AuthStoreContext.Provider value={store}>

@@ -59,7 +59,7 @@ export default async function RootLayout({
               {children}
               {/* Di dalam ThemeProvider: Toaster membaca tema lewat
                   `useTheme()` untuk menyamakan warna light/dark. */}
-              <Toaster />
+              <Toaster duration={1000} visibleToasts={1} richColors />
             </AuthStoreProvider>
           </QueryProvider>
         </ThemeProvider>

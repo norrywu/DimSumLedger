@@ -199,8 +199,9 @@ export function RiwayatDetailSheet({
             ) : (
               <BluetoothIcon data-icon="inline-start" />
             )}
-            Cetak Nota Bluetooth{" "}
-            {printerName ? `(${printerName})` : "(Deteksi Otomatis)"}
+            <span className="truncate">
+              Cetak Nota {printerName ? ` (${printerName})` : ""}
+            </span>
           </Button>
         </SheetFooter>
       </SheetContent>
