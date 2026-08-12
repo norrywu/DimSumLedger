@@ -1,4 +1,9 @@
-import { BluetoothCharacteristic, WebBluetoothAPI } from "@/types/bluetooth";
+import {
+  BluetoothCharacteristic,
+  BluetoothDevice,
+  BluetoothService,
+  WebBluetoothAPI,
+} from "@/types/bluetooth";
 
 export function isBluetoothSupported(): boolean {
   return typeof window !== "undefined" && "bluetooth" in navigator;
@@ -16,27 +21,26 @@ export async function connectToBluetoothPrinter() {
 
   console.log("🔍 Starting Bluetooth device scan...");
 
-  const device = await navBT.requestDevice({
-    optionalServices: [
-      "000018f0-0000-1000-8000-00805f9b34fb", // Printer GATT Service
-      "0000ffe0-0000-1000-8000-00805f9b34fb", // FFE0 / HM-10 (Sangat Umum: Goojprt, PT-210, ZJiang, Mini POS)
-      "0000ff00-0000-1000-8000-00805f9b34fb", // FF00 Custom Service (Panda, EPOS, Xprinter)
-      "0000fee0-0000-1000-8000-00805f9b34fb", // FEE0 Telink / Jiabi BLE
-      "0000fee1-0000-1000-8000-00805f9b34fb", // FEE1 Telink BLE
-      "00001101-0000-1000-8000-00805f9b34fb", // SPP UUID standar
-      "49535343-fe7d-4ae5-8fa9-9fafd205e455", // Transparent Serial Service (Microchip/ISSC)
-      "e7810a71-73ae-499d-8c15-faa9aef0c3f2", // RPP02N / Rongta
-      "0000af00-0000-1000-8000-00805f9b34fb", // AF00 Custom Service
-      "0000ffe5-0000-1000-8000-00805f9b34fb", // FFE5 Custom Service
-      "ffe0",
-      "ff00",
-      "fee0",
-      "fee1",
-      "18f0",
-    ],
-
-    acceptAllDevices: true,
-  });
+  let device: BluetoothDevice;
+  try {
+    device = await navBT.requestDevice({
+      optionalServices: [
+        "000018f0-0000-1000-8000-00805f9b34fb", // Printer GATT Service
+        "0000ffe0-0000-1000-8000-00805f9b34fb", // FFE0 / HM-10 (Goojprt, PT-210, ZJiang, Mini POS)
+        "0000ff00-0000-1000-8000-00805f9b34fb", // FF00 Custom Service (Panda, EPOS, Xprinter)
+        "0000fee0-0000-1000-8000-00805f9b34fb", // FEE0 Telink / Jiabi BLE
+        "0000fee1-0000-1000-8000-00805f9b34fb", // FEE1 Telink BLE
+        "49535343-fe7d-4ae5-8fa9-9fafd205e455", // Transparent Serial Service (Microchip/ISSC)
+        "e7810a71-73ae-499d-8c15-faa9aef0c3f2", // RPP02N / Rongta
+        "0000af00-0000-1000-8000-00805f9b34fb", // AF00 Custom Service
+        "0000ffe5-0000-1000-8000-00805f9b34fb", // FFE5 Custom Service
+      ],
+      acceptAllDevices: true,
+    });
+  } catch (err) {
+    console.error("❌ Error in requestDevice:", err);
+    throw err;
+  }
 
   console.log("✅ Device found:", device.name || "unknown");
   console.log("📱 Device UUID:", device.id);
@@ -49,7 +53,7 @@ export async function connectToBluetoothPrinter() {
   const services = await server.getPrimaryServices();
 
   console.log("📡 Services found:", services.length);
-  services.forEach((service, idx) => {
+  services.forEach((service: BluetoothService, idx: number) => {
     console.log(`   Service ${idx + 1}: ${service.uuid}`);
   });
 
@@ -73,8 +77,8 @@ export async function connectToBluetoothPrinter() {
         }
       }
       if (writableChar) break;
-    } catch {
-      // Abaikan jika service tidak mengizinkan akses karakteristik
+    } catch (err) {
+      console.log(err);
     }
   }
 
