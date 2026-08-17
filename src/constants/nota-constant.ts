@@ -1,8 +1,8 @@
 /** Kop nota. Ubah di sini — dipakai di setiap struk yang dicetak. */
 export const NOTA_TOKO = {
   nama: "Dimsum Sedap",
-  alamat: "Jl.bolobolo",
-  kontak: "0800-0000-0000",
+  alamat: "Jl. Aur kuning gg.keluarga pekanbaru riau",
+  kontak: "0851-3304-4074 (WA only)",
   penutup: "Terima kasih atas kunjungan Anda.",
 };
 

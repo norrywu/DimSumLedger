@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "POS Dimsum",
+  name: "Teras Dimsum",
   description: "Aplikasi kasir untuk usaha dimsum",
   company: {
     name: "POS Dimsum",
