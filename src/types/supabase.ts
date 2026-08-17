@@ -546,6 +546,7 @@ export type Database = {
           modal_kemasan_satuan: number | null
           modal_upah: number | null
           modal_upah_satuan: number | null
+          nama_kategori: string | null
           nama_produk: string | null
           nama_varian: string | null
           omzet: number | null
@@ -611,12 +612,15 @@ export type Database = {
       laporan_penjualan: {
         Args: { p_dari: string; p_sampai: string }
         Returns: {
+          kasir_id: string
+          kasir_nama: string
           laba: number
           modal: number
           modal_bahan: number
           modal_extra: number
           modal_kemasan: number
           modal_upah: number
+          nama_kategori: string
           nama_produk: string
           nama_varian: string
           omzet: number

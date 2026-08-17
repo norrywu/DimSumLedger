@@ -7,6 +7,7 @@ const angka = "text-right tabular-nums";
 export const laporanColumns: DataTableColumn<BarisLaporan>[] = [
   { header: "Produk", render: (row) => row.nama_produk },
   { header: "Varian", render: (row) => row.nama_varian },
+  { header: "Kategori", render: (row) => row.nama_kategori },
   {
     header: "Porsi",
     headClassName: angka,

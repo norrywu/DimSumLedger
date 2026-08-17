@@ -17,6 +17,7 @@ with (security_invoker = true) as
          t.status,
          t.kasir_id,
          t.kasir_nama,
+         coalesce(c.nama, '-') as nama_kategori,
          ti.variant_id,
          ti.nama_produk,
          ti.nama_varian,
@@ -45,6 +46,10 @@ with (security_invoker = true) as
 
     from public.transaksi_item ti
     join public.transaksi t on t.id = ti.transaksi_id
+
+    left join public.variants   vv on vv.id = ti.variant_id
+    left join public.products   p  on p.id  = vv.product_id
+    left join public.categories c  on c.id  = p.category_id
 
     left join lateral (
       select sum(tim.tambahan_harga) as extra_harga,

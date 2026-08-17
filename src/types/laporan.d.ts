@@ -3,6 +3,7 @@ export type PeriodeLaporan = "hari_ini" | "7_hari" | "30_hari";
 export type BarisLaporan = {
   nama_produk: string;
   nama_varian: string;
+  nama_kategori: string;
   porsi: number;
   pcs: number;
   omzet: number;
@@ -12,4 +13,6 @@ export type BarisLaporan = {
   modal_extra: number;
   modal: number;
   laba: number;
+  kasir_id: string;
+  kasir_nama: string;
 };

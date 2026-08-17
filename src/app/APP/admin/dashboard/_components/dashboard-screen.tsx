@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ShoppingCart } from "lucide-react";
 
 import { DataTableCard } from "@/components/common/data-table-card";
+import { IconActionButton } from "@/components/common/icon-action-button";
 import { StatTile } from "@/components/common/stat-tile";
 import { Button } from "@/components/ui/button";
 import { hariIni, tanggalKe } from "@/constants/cashflow-constant";
 import { useCashFlow } from "@/hooks/use-cashflow";
 import { useLaporanPenjualan } from "@/hooks/use-laporan";
+import { jumlahkanPerVarian } from "@/lib/report";
 import { formatCurrency } from "@/lib/utils";
 import type { BarisLaporan } from "@/types/laporan";
 
@@ -26,9 +30,13 @@ function ringkas(rows: BarisLaporan[]) {
 }
 
 export function DashboardScreen() {
+  const router = useRouter();
   const { data: hariIniRows } = useLaporanPenjualan("hari_ini");
-  const { data: bulanRows, isPending, isError, error } =
-    useLaporanPenjualan("30_hari");
+  const {
+    data: bulanRows,
+    isPending,
+    isError,
+  } = useLaporanPenjualan("30_hari");
   const { data: kas } = useCashFlow(tanggalKe(29), hariIni());
 
   const hari = ringkas(hariIniRows ?? []);
@@ -47,7 +55,16 @@ export function DashboardScreen() {
   return (
     <>
       <section className="grid gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">Hari ini</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Hari ini
+          </h2>
+          <IconActionButton
+            label="Buka layar kasir"
+            icon={<ShoppingCart />}
+            onClick={() => router.push("/APP/cashier/order")}
+          />
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <StatTile label="Omzet" nilai={formatCurrency(hari.omzet)} />
           <StatTile label="Laba" nilai={formatCurrency(hari.laba)} />
@@ -85,6 +102,7 @@ export function DashboardScreen() {
         columns={[
           { header: "Produk", render: (row) => row.nama_produk },
           { header: "Varian", render: (row) => row.nama_varian },
+          { header: "Kategori", render: (row) => row.nama_kategori },
           {
             header: "Porsi",
             headClassName: angka,
@@ -104,15 +122,15 @@ export function DashboardScreen() {
             render: (row) => formatCurrency(row.laba),
           },
         ]}
-        // RPC sudah mengurutkan dari omzet terbesar, jadi lima teratas cukup
-        // dipotong di sini tanpa menyortir ulang.
-        data={(bulanRows ?? []).slice(0, 5)}
+        // RPC mengembalikan baris per varian per kasir; gabungkan dulu per
+        // varian, lalu potong lima teratas tanpa menyortir ulang.
+        data={jumlahkanPerVarian(bulanRows ?? []).slice(0, 5)}
         rowKey={(row) => `${row.nama_produk}|${row.nama_varian}`}
         emptyMessage={
           isPending
             ? "Memuat…"
             : isError
-              ? error.message
+              ? "Gagal memuat laporan. Silakan coba lagi."
               : "Belum ada penjualan 30 hari terakhir."
         }
       />

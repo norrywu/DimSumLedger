@@ -7,6 +7,7 @@ import { FilterSelect } from "@/components/common/filter-select";
 import { StatTile } from "@/components/common/stat-tile";
 import { PERIODE_OPTIONS } from "@/constants/laporan-constant";
 import { useLaporanPenjualan } from "@/hooks/use-laporan";
+import { jumlahkanPerVarian } from "@/lib/report";
 import { formatCurrency } from "@/lib/utils";
 import type { BarisLaporan, PeriodeLaporan } from "@/types/laporan";
 import { laporanColumns } from "./columns";
@@ -40,6 +41,17 @@ function jumlahkan(rows: BarisLaporan[]) {
   );
 }
 
+function ringkasPerKasir(rows: BarisLaporan[]) {
+  return rows.reduce(
+    (acc, row) => {
+      const key = row.kasir_nama || "Tidak diketahui";
+      acc[key] = (acc[key] ?? 0) + (row.modal_upah ?? 0);
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+}
+
 /**
  * Rincian berkolom, bukan satu baris dipisah titik tengah: angka-angka ini
  * menjumlah ke nilai utama kartunya, dan itu hanya bisa diperiksa mata kalau
@@ -61,12 +73,14 @@ function Rincian({ baris }: { baris: [string, number][] }) {
 export function LaporanScreen() {
   const [periode, setPeriode] = useState<PeriodeLaporan | undefined>("30_hari");
 
-  const { data, isPending, isError, error } = useLaporanPenjualan(periode);
+  const { data, isPending, isError } = useLaporanPenjualan(periode);
 
   const rows = data ?? [];
   const total = jumlahkan(rows);
   const margin =
     total.omzet > 0 ? Math.round((total.laba / total.omzet) * 100) : 0;
+  const perKasir = ringkasPerKasir(rows);
+  const varianRows = jumlahkanPerVarian(rows);
 
   return (
     <>
@@ -103,9 +117,19 @@ export function LaporanScreen() {
           label="Upah"
           nilai={formatCurrency(total.upah)}
           keterangan={
-            total.pcs > 0
-              ? `${total.pcs} pcs · sudah termasuk di Modal`
-              : undefined
+            total.pcs > 0 ? (
+              <span className="mt-1 grid gap-0.5">
+                <span className="text-muted-foreground">
+                  {total.pcs} pcs terjual.
+                </span>
+                <Rincian
+                  baris={Object.entries(perKasir).map(
+                    ([nama, upah]) =>
+                      [`(kasir) ${nama}`, upah] as [string, number],
+                  )}
+                />
+              </span>
+            ) : undefined
           }
         />
         <StatTile
@@ -118,14 +142,16 @@ export function LaporanScreen() {
       <DataTableCard<BarisLaporan>
         title="Penjualan per varian"
         columns={laporanColumns}
-        data={rows}
-        rowKey={(row) => `${row.nama_produk}|${row.nama_varian}`}
-        caption="Transaksi yang dibatalkan tidak ikut dihitung. Diurutkan dari omzet terbesar."
+        data={varianRows}
+        rowKey={(row) =>
+          `${row.nama_produk}|${row.nama_varian}|${row.nama_kategori}`
+        }
+        caption="Total semua kasir. Transaksi yang dibatalkan tidak ikut dihitung. Diurutkan dari omzet terbesar."
         emptyMessage={
           isPending
             ? "Memuat…"
             : isError
-              ? error.message
+              ? "Gagal memuat laporan. Silakan coba lagi."
               : "Belum ada penjualan di periode ini."
         }
       />

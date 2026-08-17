@@ -25,6 +25,10 @@ export function riwayatColumns({
 }): DataTableColumn<RiwayatTransaksi>[] {
   return [
     {
+      header: "ID",
+      render: (row) => `#${row.id.slice(0, 8)}`,
+    },
+    {
       header: "Waktu",
       render: (row) => formatDateTime(row.created_at),
     },

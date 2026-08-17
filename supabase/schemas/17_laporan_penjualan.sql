@@ -17,6 +17,7 @@ create or replace function public.laporan_penjualan(
 returns table (
   nama_produk   text,
   nama_varian   text,
+  nama_kategori text,
   porsi         bigint,
   pcs           bigint,
   omzet         numeric,
@@ -25,7 +26,9 @@ returns table (
   modal_upah    numeric,
   modal_extra   numeric,
   modal         numeric,
-  laba          numeric
+  laba          numeric,
+  kasir_id      uuid,
+  kasir_nama    text
 )
 language sql
 stable
@@ -34,6 +37,7 @@ set search_path = ''
 as $$
   select v.nama_produk,
          v.nama_varian,
+         v.nama_kategori,
          sum(v.qty)::bigint,
          sum(v.pcs)::bigint,
          sum(v.omzet),
@@ -42,13 +46,15 @@ as $$
          sum(v.modal_upah),
          sum(v.modal_extra),
          sum(v.modal),
-         sum(v.laba)
+         sum(v.laba),
+         v.kasir_id,
+         v.kasir_nama
     from public.v_penjualan_item v
    -- Transaksi yang dibatalkan tidak pernah jadi omzet.
    where v.status = 'selesai'
      and v.created_at >= p_dari
      and v.created_at <  p_sampai
-   group by v.nama_produk, v.nama_varian
+   group by v.nama_produk, v.nama_varian, v.nama_kategori, v.kasir_id, v.kasir_nama
    order by sum(v.omzet) desc;
 $$;
 
