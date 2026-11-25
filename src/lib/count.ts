@@ -64,3 +64,58 @@ export function hitungKembalian({
     cukup: dibayar >= total,
   };
 }
+
+export function hitungStokTerpakaiPerProduk(
+  items: { product_id: string; jumlah_pcs: number | null; qty: number }[],
+): Record<string, number> {
+  return items.reduce<Record<string, number>>((akumulasi, item) => {
+    const pcs = (item.jumlah_pcs ?? 0) * item.qty;
+    akumulasi[item.product_id] = (akumulasi[item.product_id] ?? 0) + pcs;
+    return akumulasi;
+  }, {});
+}
+
+export function hitungSisaStokVarian({
+  lacakStok,
+  stokPcs,
+  jumlahPcs,
+  terpakaiPcs = 0,
+}: {
+  lacakStok: boolean;
+  stokPcs: number;
+  jumlahPcs: number | null;
+  terpakaiPcs?: number;
+}) {
+  if (!lacakStok) {
+    return {
+      dibatasi: false as const,
+      sisaPcs: null,
+      maksTambahPorsi: Number.POSITIVE_INFINITY,
+      habis: false,
+      melebihiStok: false,
+    };
+  }
+
+  const melebihiStok = terpakaiPcs > stokPcs;
+  const sisaPcs = Math.max(stokPcs - terpakaiPcs, 0);
+
+  if (!jumlahPcs || jumlahPcs <= 0) {
+    return {
+      dibatasi: true as const,
+      sisaPcs,
+      maksTambahPorsi: 0,
+      habis: true,
+      melebihiStok,
+    };
+  }
+
+  const maksTambahPorsi = Math.floor(sisaPcs / jumlahPcs);
+
+  return {
+    dibatasi: true as const,
+    sisaPcs,
+    maksTambahPorsi,
+    habis: maksTambahPorsi < 1,
+    melebihiStok,
+  };
+}

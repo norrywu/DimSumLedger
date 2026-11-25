@@ -37,6 +37,22 @@ export function productColumns({
       render: (row) => row.kategori_nama,
     },
     {
+      header: "Stok",
+      headClassName: "text-right",
+      cellClassName: "text-right tabular-nums",
+      render: (row) => {
+        if (!row.lacak_stok) {
+          return <span className="text-muted-foreground">Tidak dilacak</span>;
+        }
+        if (row.stok_pcs === 0) {
+          return (
+            <span className="font-medium text-destructive">Habis (0 pcs)</span>
+          );
+        }
+        return `${row.stok_pcs} pcs`;
+      },
+    },
+    {
       header: "Upah/pcs",
       headClassName: "text-right",
       cellClassName: "text-right tabular-nums",

@@ -47,3 +47,44 @@ $$;
 -- --- Keamanan -----------------------------------------------
 revoke execute on function public.batalkan_transaksi(uuid) from public, anon;
 grant execute on function public.batalkan_transaksi(uuid) to authenticated;
+
+-- Mengembalikan stok saat transaksi dibatalkan (oleh kasir maupun pengelola).
+-- Dipasang sebagai trigger AFTER UPDATE OF status ber-SECURITY DEFINER supaya
+-- `public.batalkan_transaksi` tetap SECURITY INVOKER dan aturan RLS 10 menit
+-- untuk kasir tidak terganggu, sementara kasir tetap tidak perlu izin UPDATE
+-- langsung ke tabel `public.products`.
+create or replace function internal.kembalikan_stok_saat_batal()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  with pengembalian as (
+    select v.product_id,
+           sum(ti.qty * ti.jumlah_pcs)::integer as kembali_pcs
+      from public.transaksi_item ti
+      join public.variants v on v.id = ti.variant_id
+     where ti.transaksi_id = new.id
+       and ti.jumlah_pcs is not null
+     group by v.product_id
+  )
+  update public.products p
+     set stok_pcs = p.stok_pcs + r.kembali_pcs
+    from pengembalian r
+   where p.id = r.product_id
+     and p.lacak_stok;
+
+  return new;
+end;
+$$;
+
+revoke execute on function internal.kembalikan_stok_saat_batal()
+  from public, anon, authenticated;
+
+drop trigger if exists on_transaksi_dibatalkan on public.transaksi;
+create trigger on_transaksi_dibatalkan
+  after update of status on public.transaksi
+  for each row
+  when (old.status = 'selesai' and new.status = 'dibatalkan')
+  execute function internal.kembalikan_stok_saat_batal();

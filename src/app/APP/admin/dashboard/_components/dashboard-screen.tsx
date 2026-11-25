@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { hariIni, tanggalKe } from "@/constants/cashflow-constant";
 import { useCashFlow } from "@/hooks/use-cashflow";
 import { useLaporanPenjualan } from "@/hooks/use-laporan";
+import { useProducts } from "@/hooks/use-products";
 import { jumlahkanPerVarian } from "@/lib/report";
 import { formatCurrency } from "@/lib/utils";
 import type { BarisLaporan } from "@/types/laporan";
+import type { Product } from "@/types/products";
 
 const angka = "text-right tabular-nums";
 
@@ -29,6 +31,16 @@ function ringkas(rows: BarisLaporan[]) {
   );
 }
 
+function ringkasStok(products: Product[]) {
+  const dilacak = products
+    .filter((item) => item.lacak_stok)
+    .sort((a, b) => a.stok_pcs - b.stok_pcs || a.nama.localeCompare(b.nama));
+  const totalPcs = dilacak.reduce((jumlah, item) => jumlah + item.stok_pcs, 0);
+  const habis = dilacak.filter((item) => item.stok_pcs === 0).length;
+
+  return { dilacak, totalPcs, habis };
+}
+
 export function DashboardScreen() {
   const router = useRouter();
   const { data: hariIniRows } = useLaporanPenjualan("hari_ini");
@@ -38,9 +50,15 @@ export function DashboardScreen() {
     isError,
   } = useLaporanPenjualan("30_hari");
   const { data: kas } = useCashFlow(tanggalKe(29), hariIni());
+  const {
+    data: products,
+    isPending: isProductsPending,
+    isError: isProductsError,
+  } = useProducts();
 
   const hari = ringkas(hariIniRows ?? []);
   const bulan = ringkas(bulanRows ?? []);
+  const stok = ringkasStok(products ?? []);
 
   const masuk = (kas ?? [])
     .filter((row) => row.type === "income")
@@ -65,10 +83,29 @@ export function DashboardScreen() {
             onClick={() => router.push("/APP/cashier/order")}
           />
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-4">
           <StatTile label="Omzet" nilai={formatCurrency(hari.omzet)} />
           <StatTile label="Laba" nilai={formatCurrency(hari.laba)} />
           <StatTile label="Porsi terjual" nilai={`${hari.porsi}`} />
+          <StatTile
+            label="Sisa stok"
+            nilai={
+              stok.dilacak.length > 0
+                ? `${stok.totalPcs.toLocaleString("id-ID")} pcs`
+                : "—"
+            }
+            keterangan={
+              stok.dilacak.length === 0 ? (
+                "Belum ada produk dilacak"
+              ) : stok.habis > 0 ? (
+                <span className="text-destructive">
+                  {stok.habis} produk habis · {stok.dilacak.length} dilacak
+                </span>
+              ) : (
+                `${stok.dilacak.length} produk dilacak`
+              )
+            }
+          />
         </div>
       </section>
 
@@ -91,6 +128,49 @@ export function DashboardScreen() {
           />
         </div>
       </section>
+
+      <DataTableCard<Product>
+        title="Stok produk"
+        headerAction={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/APP/admin/products">Kelola stok</Link>
+          </Button>
+        }
+        columns={[
+          {
+            header: "Produk",
+            cellClassName: "font-medium",
+            render: (row) => row.nama,
+          },
+          {
+            header: "Kategori",
+            cellClassName: "text-muted-foreground",
+            render: (row) => row.kategori_nama,
+          },
+          {
+            header: "Sisa stok",
+            headClassName: angka,
+            cellClassName: angka,
+            render: (row) =>
+              row.stok_pcs === 0 ? (
+                <span className="font-medium text-destructive">
+                  Habis (0 pcs)
+                </span>
+              ) : (
+                `${row.stok_pcs.toLocaleString("id-ID")} pcs`
+              ),
+          },
+        ]}
+        data={stok.dilacak}
+        rowKey={(row) => row.id}
+        emptyMessage={
+          isProductsPending
+            ? "Memuat…"
+            : isProductsError
+              ? "Gagal memuat stok produk. Silakan coba lagi."
+              : "Belum ada produk yang dilacak stoknya."
+        }
+      />
 
       <DataTableCard<BarisLaporan>
         title="Terlaris 30 hari"

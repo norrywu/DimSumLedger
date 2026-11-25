@@ -6,8 +6,8 @@ export default function ProductsPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Daftar Produk</h1>
         <p className="text-sm text-muted-foreground">
-          Produk induk yang bernaung di bawah satu kategori. Harga dan modalnya
-          ada di varian, bukan di sini.
+          Produk induk yang bernaung di bawah satu kategori, termasuk tarif upah
+          dan stok dalam satuan pcs. Harga dan modal per porsi ada di varian.
         </p>
       </div>
       <ProductsTable />

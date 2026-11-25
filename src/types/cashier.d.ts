@@ -7,6 +7,8 @@ export type KatalogItem = {
   produk_nama: string;
   category_id: string;
   kategori_nama: string;
+  lacak_stok: boolean;
+  stok_pcs: number;
 };
 
 export type KatalogExtra = {
@@ -48,10 +50,13 @@ export type RiwayatTransaksi = {
 export type CartItem = {
   key: string;
   variant_id: string;
+  product_id: string;
   produk_nama: string;
   varian_nama: string;
   jumlah_pcs: number | null;
   harga_satuan: number;
+  lacak_stok: boolean;
+  stok_pcs: number;
   qty: number;
   extra: KatalogExtra[];
 };

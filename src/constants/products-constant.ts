@@ -27,6 +27,8 @@ export const PRODUCT_FORM_DEFAULTS: ProductFormValues = {
   nama: "",
   category_id: "",
   upah_per_pcs: "",
+  lacak_stok: true,
+  stok_pcs: "0",
 };
 
 /**
@@ -51,6 +53,11 @@ export function productFields(
       label: "Upah per pcs",
       type: "number",
       placeholder: "mis. 500",
+    },
+    {
+      name: "lacak_stok",
+      label: "Lacak stok (pcs)",
+      type: "switch",
     },
   ];
 }

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getVariants } from "@/clients/variants";
+import { KATALOG_JUAL_KEY } from "@/constants/cashier-constant";
 import { VARIANTS_KEY } from "@/constants/variants-constant";
 import { deleteVarian, simpanVarian } from "@/servers/variants";
 import type { VariantActionResult } from "@/types/variants";
@@ -50,9 +51,8 @@ export function useCreateVariant(options?: MutationOptions) {
       unwrap(await simpanVarian(null, input)),
     onSuccess: (result) => {
       toast.success(result.message);
-      // Cukup VARIANTS_KEY: daftar produk tidak ikut berubah saat varian baru
-      // ditambahkan.
       queryClient.invalidateQueries({ queryKey: VARIANTS_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {
@@ -72,6 +72,7 @@ export function useUpdateVariant(options?: MutationOptions) {
     onSuccess: (result) => {
       toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: VARIANTS_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {
@@ -90,6 +91,7 @@ export function useDeleteVariant(options?: MutationOptions) {
       // Menandai cache basi; react-query fetch ulang selama masih ada komponen
       // yang memakai key ini.
       queryClient.invalidateQueries({ queryKey: VARIANTS_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {

@@ -7,7 +7,7 @@ export async function getKatalogJual(): Promise<KatalogItem[]> {
   const { data, error } = await supabase
     .from("katalog_jual")
     .select(
-      "id, varian_nama, jumlah_pcs, harga_jual, product_id, produk_nama, category_id, kategori_nama",
+      "id, varian_nama, jumlah_pcs, harga_jual, product_id, produk_nama, category_id, kategori_nama, lacak_stok, stok_pcs",
     )
     .order("kategori_nama")
     .order("produk_nama")

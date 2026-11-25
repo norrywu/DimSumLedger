@@ -135,21 +135,27 @@ export type Database = {
           category_id: string
           created_at: string
           id: string
+          lacak_stok: boolean
           nama: string
+          stok_pcs: number
           upah_per_pcs: number
         }
         Insert: {
           category_id: string
           created_at?: string
           id?: string
+          lacak_stok?: boolean
           nama: string
+          stok_pcs?: number
           upah_per_pcs?: number
         }
         Update: {
           category_id?: string
           created_at?: string
           id?: string
+          lacak_stok?: boolean
           nama?: string
+          stok_pcs?: number
           upah_per_pcs?: number
         }
         Relationships: [
@@ -486,8 +492,10 @@ export type Database = {
           id: string | null
           jumlah_pcs: number | null
           kategori_nama: string | null
+          lacak_stok: boolean | null
           product_id: string | null
           produk_nama: string | null
+          stok_pcs: number | null
           varian_nama: string | null
         }
         Relationships: []

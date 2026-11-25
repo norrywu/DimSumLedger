@@ -35,3 +35,32 @@ create policy "pengelola_akses_penuh" on public.variants
 
 revoke all on table public.variants from anon, authenticated;
 grant select, insert, update, delete on table public.variants to authenticated;
+
+create or replace function internal.cek_pcs_varian_lacak_stok()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if exists (
+    select 1
+      from public.products p
+     where p.id = new.product_id
+       and p.lacak_stok
+  ) then
+    raise exception 'Jumlah pcs wajib diisi karena produk ini melacak stok.';
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke execute on function internal.cek_pcs_varian_lacak_stok()
+  from public, anon, authenticated;
+
+drop trigger if exists before_variants_cek_pcs_stok on public.variants;
+create trigger before_variants_cek_pcs_stok
+  before insert or update of product_id, jumlah_pcs, aktif on public.variants
+  for each row
+  when (new.aktif and new.jumlah_pcs is null)
+  execute function internal.cek_pcs_varian_lacak_stok();
