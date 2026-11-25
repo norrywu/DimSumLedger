@@ -10,10 +10,12 @@ import { toast } from "sonner";
 
 import { getRiwayatTransaksi, getTransaksiById } from "@/clients/transaksi";
 import {
+  KATALOG_JUAL_KEY,
   RIWAYAT_PER_HALAMAN,
   RIWAYAT_TRANSAKSI_KEY,
   TRANSAKSI_DETAIL_KEY,
 } from "@/constants/cashier-constant";
+import { PRODUCTS_KEY } from "@/constants/products-constant";
 import { batalkanTransaksi, simpanTransaksi } from "@/servers/transaksi";
 import type { TransaksiActionResult } from "@/types/cashier";
 import type { TransaksiInput } from "@/validations/cashier-validation";
@@ -54,6 +56,8 @@ export function useBatalkanTransaksi(options?: { onSuccess?: () => void }) {
     mutationFn: async (id: string) => unwrap(await batalkanTransaksi(id)),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: RIWAYAT_TRANSAKSI_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
       toast.success(result.message);
       options?.onSuccess?.();
     },
@@ -75,10 +79,14 @@ export function useSimpanTransaksi(options?: {
       // Tanpa ini, kasir yang pindah ke Riwayat sesaat setelah menyimpan masih
       // melihat daftar lama dan mengira transaksinya gagal.
       queryClient.invalidateQueries({ queryKey: RIWAYAT_TRANSAKSI_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
       toast.success(result.message);
       options?.onSuccess?.(result.id);
     },
     onError: (error) => {
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
       toast.error(error.message);
     },
   });

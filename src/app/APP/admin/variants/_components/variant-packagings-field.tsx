@@ -52,8 +52,8 @@ export function VariantPackagingsField({ form }: { form: VariantForm }) {
   // Tarif upah milik PRODUK induknya, jadi pratinjau di sini harus ikut
   // mengambilnya — kalau tidak, angka modal di form lebih kecil daripada yang
   // nanti dihitung `v_hpp_varian`.
-  const upahPerPcs =
-    products?.find((item) => item.id === productId)?.upah_per_pcs ?? 0;
+  const produkInduk = products?.find((item) => item.id === productId);
+  const upahPerPcs = produkInduk?.upah_per_pcs ?? 0;
 
   const { modalKemasan, modalUpah, modalTotal, margin } = hitungHppVarian({
     hargaJual: keAngka(hargaJual),
@@ -143,6 +143,13 @@ export function VariantPackagingsField({ form }: { form: VariantForm }) {
       </Button>
 
       {errorDaftar && <FieldError errors={[errorDaftar]} />}
+
+      {produkInduk?.lacak_stok && !jumlahPcs && (
+        <p className="text-xs text-destructive">
+          Produk ini melacak stok — isi Jumlah pcs agar varian aktif bisa
+          disimpan.
+        </p>
+      )}
 
       <div className="mt-2 grid gap-1 rounded-md border p-3 text-sm">
         <BarisRingkasan label="Modal kemasan" nilai={modalKemasan} />

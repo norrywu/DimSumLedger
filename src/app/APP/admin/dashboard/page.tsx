@@ -6,7 +6,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Dasbor</h1>
         <p className="text-sm text-muted-foreground">
-          Ringkasan penjualan dan arus kas.
+          Ringkasan penjualan, stok produk, dan arus kas.
         </p>
       </div>
       <DashboardScreen />

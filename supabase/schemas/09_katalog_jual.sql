@@ -1,5 +1,5 @@
 
-create view public.katalog_jual
+create or replace view public.katalog_jual
 with (security_invoker = false) as
   select v.id,
          v.nama        as varian_nama,
@@ -8,7 +8,9 @@ with (security_invoker = false) as
          p.id          as product_id,
          p.nama        as produk_nama,
          k.id          as category_id,
-         k.nama        as kategori_nama
+         k.nama        as kategori_nama,
+         p.lacak_stok,
+         p.stok_pcs
     from public.variants v
     join public.products p   on p.id = v.product_id
     join public.categories k on k.id = p.category_id

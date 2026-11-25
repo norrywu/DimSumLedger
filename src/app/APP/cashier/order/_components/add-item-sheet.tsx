@@ -14,18 +14,21 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
+import { hitungSisaStokVarian } from "@/lib/count";
 import { formatCurrency } from "@/lib/utils";
 import type { KatalogExtra, KatalogItem } from "@/types/cashier";
 
 export function AddItemSheet({
   item,
   extras,
+  terpakaiPerProduk,
   open,
   onOpenChange,
   onAdd,
 }: {
   item: KatalogItem | null;
   extras: KatalogExtra[];
+  terpakaiPerProduk: Record<string, number>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (item: KatalogItem, extra: KatalogExtra[]) => void;
@@ -47,6 +50,14 @@ export function AddItemSheet({
     (jumlahnya, extra) => jumlahnya + extra.tambahan_harga,
     0,
   );
+  const statusStok = item
+    ? hitungSisaStokVarian({
+        lacakStok: item.lacak_stok,
+        stokPcs: item.stok_pcs,
+        jumlahPcs: item.jumlah_pcs,
+        terpakaiPcs: terpakaiPerProduk[item.product_id] ?? 0,
+      })
+    : null;
 
   return (
     <Sheet open={open} onOpenChange={ubahTampilan}>
@@ -93,9 +104,14 @@ export function AddItemSheet({
           </div>
 
           <SheetFooter>
+            {statusStok?.habis && (
+              <p className="text-xs text-destructive">
+                Stok tidak mencukupi untuk varian ini.
+              </p>
+            )}
             <Button
               type="button"
-              disabled={!item}
+              disabled={!item || Boolean(statusStok?.habis)}
               onClick={() => {
                 if (item) onAdd(item, extraTerpilih);
                 ubahTampilan(false);

@@ -9,12 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { hitungKembalian, keAngka } from "@/lib/count";
+import {
+  hitungKembalian,
+  hitungSisaStokVarian,
+  keAngka,
+} from "@/lib/count";
 import { formatCurrency } from "@/lib/utils";
 import type { CartItem } from "@/types/cashier";
 
 export function CartPanel({
   items,
+  terpakaiPerProduk,
   onUbahQty,
   onHapus,
   onKosongkan,
@@ -25,6 +30,7 @@ export function CartPanel({
   onUbahDibayar,
 }: {
   items: CartItem[];
+  terpakaiPerProduk: Record<string, number>;
   onUbahQty: (key: string, selisih: number) => void;
   onHapus: (key: string) => void;
   onKosongkan: () => void;
@@ -36,6 +42,11 @@ export function CartPanel({
 }) {
   const kosong = items.length === 0;
   const { kembalian, kurang, cukup } = hitungKembalian({ total, dibayar });
+  const adaStokKurang = items.some(
+    (item) =>
+      item.lacak_stok &&
+      (terpakaiPerProduk[item.product_id] ?? 0) > item.stok_pcs,
+  );
 
   return (
     <Card className="lg:sticky lg:top-4">
@@ -60,6 +71,12 @@ export function CartPanel({
                 (jumlahnya, extra) => jumlahnya + extra.tambahan_harga,
                 0,
               );
+              const statusStok = hitungSisaStokVarian({
+                lacakStok: item.lacak_stok,
+                stokPcs: item.stok_pcs,
+                jumlahPcs: item.jumlah_pcs,
+                terpakaiPcs: terpakaiPerProduk[item.product_id] ?? 0,
+              });
 
               return (
                 <div key={item.key} className="grid gap-1">
@@ -75,6 +92,12 @@ export function CartPanel({
                       {item.extra.length > 0 && (
                         <span className="text-xs text-muted-foreground">
                           {item.extra.map((extra) => extra.nama).join(", ")}
+                        </span>
+                      )}
+                      {statusStok.melebihiStok && (
+                        <span className="text-xs text-destructive">
+                          Stok tersisa {item.stok_pcs} pcs, kurangi jumlah
+                          porsi.
                         </span>
                       )}
                     </div>
@@ -95,6 +118,7 @@ export function CartPanel({
                     <IconActionButton
                       label={`Tambah ${item.varian_nama}`}
                       icon={<PlusIcon />}
+                      disabled={statusStok.habis}
                       onClick={() => onUbahQty(item.key, 1)}
                     />
                     <IconActionButton
@@ -146,7 +170,7 @@ export function CartPanel({
         <Button
           type="button"
           size="lg"
-          disabled={kosong || isPending || !cukup}
+          disabled={kosong || isPending || !cukup || adaStokKurang}
           onClick={onSimpan}
         >
           {isPending && <Spinner data-icon="inline-start" />}

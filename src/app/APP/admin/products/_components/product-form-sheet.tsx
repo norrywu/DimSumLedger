@@ -1,5 +1,8 @@
 "use client";
 
+import { useWatch, type UseFormReturn } from "react-hook-form";
+
+import { FormField } from "@/components/common/form";
 import { TriggerSheet } from "@/components/sheet-trigger";
 import {
   PRODUCT_FORM_DEFAULTS,
@@ -84,6 +87,8 @@ export function ProductFormSheet({
               nama: target.product.nama,
               category_id: target.product.category_id,
               upah_per_pcs: target.product.upah_per_pcs.toString(),
+              lacak_stok: target.product.lacak_stok,
+              stok_pcs: target.product.stok_pcs.toString(),
             }
           : PRODUCT_FORM_DEFAULTS
       }
@@ -91,6 +96,36 @@ export function ProductFormSheet({
       onSubmit={handleSubmit}
       submitLabel={isUbah ? "Simpan perubahan" : "Simpan produk"}
       isPending={isCreating || isUpdating}
-    />
+    >
+      {(form) => <ProductStockField form={form} />}
+    </TriggerSheet>
+  );
+}
+
+function ProductStockField({
+  form,
+}: {
+  form: UseFormReturn<ProductFormValues, unknown, ProductInput>;
+}) {
+  const lacakStok = useWatch({
+    control: form.control,
+    name: "lacak_stok",
+  });
+
+  if (!lacakStok) return null;
+
+  return (
+    <div className="grid gap-1.5">
+      <FormField<ProductFormValues, ProductInput>
+        control={form.control}
+        name="stok_pcs"
+        label="Stok (pcs)"
+        type="number"
+        placeholder="mis. 100"
+      />
+      <p className="text-xs text-muted-foreground">
+        Berkurang otomatis sesuai jumlah pcs varian yang terjual.
+      </p>
+    </div>
   );
 }

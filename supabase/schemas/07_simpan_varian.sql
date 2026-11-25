@@ -30,6 +30,15 @@ BEGIN
     RAISE EXCEPTION 'Kemasan tidak boleh kembar dalam satu varian.';
   END IF;
 
+  IF p_aktif AND p_jumlah_pcs IS NULL AND EXISTS (
+    SELECT 1
+      FROM public.products p
+     WHERE p.id = p_product_id
+       AND p.lacak_stok
+  ) THEN
+    RAISE EXCEPTION 'Jumlah pcs wajib diisi karena produk ini melacak stok.';
+  END IF;
+
   IF p_id IS NULL THEN
     INSERT INTO public.variants
       (product_id, nama, jumlah_pcs, harga_jual, modal_bahan, aktif)

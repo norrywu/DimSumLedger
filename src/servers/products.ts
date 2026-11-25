@@ -24,9 +24,12 @@ function errorMessage(
   code: string | undefined,
   pesanRelasi: string,
   fallback: string,
+  pesanDatabase?: string,
 ) {
+  if (code === "P0001" && pesanDatabase) return pesanDatabase;
+  if (code === "23505") return "Produk bernama itu sudah ada.";
   if (code === "23514")
-    return "Nama produk tidak boleh kosong, berspasi di ujung, atau lebih dari 50 karakter.";
+    return "Nama produk atau jumlah stok tidak masuk akal.";
 
   if (code === "23503") return pesanRelasi;
   if (code === "42501") return "Kamu tidak punya akses mengelola produk.";
@@ -86,6 +89,7 @@ export async function createProduk(
         error.code,
         PESAN_KATEGORI_HILANG,
         `Gagal menyimpan: ${error.message}`,
+        error.message,
       ),
     };
   }
@@ -124,6 +128,7 @@ export async function updateProduk(
         error.code,
         PESAN_KATEGORI_HILANG,
         `Gagal menyimpan: ${error.message}`,
+        error.message,
       ),
     };
   }

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getProducts } from "@/clients/products";
+import { KATALOG_JUAL_KEY } from "@/constants/cashier-constant";
 import { PRODUCTS_KEY } from "@/constants/products-constant";
 import { createProduk, deleteProduk, updateProduk } from "@/servers/products";
 import type { ProductActionResult } from "@/types/products";
@@ -41,9 +42,8 @@ export function useCreateProduct(options?: MutationOptions) {
     mutationFn: async (input: ProductInput) => unwrap(await createProduk(input)),
     onSuccess: (result) => {
       toast.success(result.message);
-      // Cukup PRODUCTS_KEY: daftar kategori tidak ikut berubah saat produk
-      // baru ditambahkan.
       queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {
@@ -63,6 +63,7 @@ export function useUpdateProduct(options?: MutationOptions) {
     onSuccess: (result) => {
       toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {
@@ -81,6 +82,7 @@ export function useDeleteProduct(options?: MutationOptions) {
       // Menandai cache basi; react-query fetch ulang selama masih ada komponen
       // yang memakai key ini.
       queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
+      queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {

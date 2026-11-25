@@ -20,6 +20,7 @@ declare
   v_item_id      uuid;
   v_tambahan     numeric(12,2);
   v_diminta      integer;
+  v_stok         record;
 begin
   if v_kasir_id is null then
     raise exception 'Kamu harus login untuk mencatat transaksi.';
@@ -105,6 +106,42 @@ begin
     raise exception 'Uang yang dibayarkan kurang. Total %, dibayar %.',
       v_total, coalesce(p_dibayar, 0);
   end if;
+
+  for v_stok in
+    with kebutuhan as (
+      select v.product_id,
+             sum(ti.qty * coalesce(ti.jumlah_pcs, 0))::integer as diminta_pcs,
+             bool_or(ti.jumlah_pcs is null)                    as ada_tanpa_pcs
+        from public.transaksi_item ti
+        join public.variants v on v.id = ti.variant_id
+       where ti.transaksi_id = v_transaksi_id
+       group by v.product_id
+    )
+    select p.id,
+           p.nama,
+           p.stok_pcs,
+           k.diminta_pcs,
+           k.ada_tanpa_pcs
+      from public.products p
+      join kebutuhan k on k.product_id = p.id
+     where p.lacak_stok
+     order by p.id
+       for update of p
+  loop
+    if v_stok.ada_tanpa_pcs then
+      raise exception 'Varian produk "%" belum punya jumlah pcs, sehingga stok tidak bisa dihitung.',
+        v_stok.nama;
+    end if;
+
+    if v_stok.stok_pcs < v_stok.diminta_pcs then
+      raise exception 'Stok "%" tidak cukup. Sisa % pcs, dibutuhkan % pcs.',
+        v_stok.nama, v_stok.stok_pcs, v_stok.diminta_pcs;
+    end if;
+
+    update public.products
+       set stok_pcs = stok_pcs - v_stok.diminta_pcs
+     where id = v_stok.id;
+  end loop;
 
   update public.transaksi
      set total = v_total, dibayar = p_dibayar
