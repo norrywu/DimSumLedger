@@ -1,0 +1,4 @@
+# .worktreeinclude (repo root)
+# Hanya gunakan literal path (tanpa wildcard/glob)
+.env
+.env.local

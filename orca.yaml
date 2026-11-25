@@ -1,0 +1,4 @@
+# orca.yaml (repo root)
+worktree:
+  sharedDirectories:
+    - node_modules
