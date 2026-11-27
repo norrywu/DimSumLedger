@@ -4,6 +4,10 @@ import { useState } from "react";
 
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
 import { DataTableCard } from "@/components/common/data-table-card";
+import {
+  StockFormSheet,
+  type StockFormTarget,
+} from "@/components/stock/stock-form-sheet";
 import { Button } from "@/components/ui/button";
 import { useDeleteProduct, useProducts } from "@/hooks/use-products";
 import type { Product } from "@/types/products";
@@ -20,6 +24,10 @@ export function ProductsTable() {
   // animasi itu. Dibiarkan begini, target baru ditimpa saat sheet dibuka lagi.
   const [formOpen, setFormOpen] = useState(false);
   const [formTarget, setFormTarget] = useState<ProductFormTarget>({
+    mode: "tambah",
+  });
+  const [stockOpen, setStockOpen] = useState(false);
+  const [stockTarget, setStockTarget] = useState<StockFormTarget>({
     mode: "tambah",
   });
 
@@ -44,7 +52,13 @@ export function ProductsTable() {
     setFormOpen(true);
   };
 
+  const openCatatStok = (product: Product) => {
+    setStockTarget({ mode: "tambah", productId: product.id, lockProduct: true });
+    setStockOpen(true);
+  };
+
   const columns = productColumns({
+    onRequestAdjustStock: openCatatStok,
     onRequestEdit: openUbah,
     onRequestDelete: setDeleteTarget,
     isBusy: isDeleting,
@@ -74,6 +88,12 @@ export function ProductsTable() {
         target={formTarget}
         open={formOpen}
         onOpenChange={setFormOpen}
+      />
+
+      <StockFormSheet
+        target={stockTarget}
+        open={stockOpen}
+        onOpenChange={setStockOpen}
       />
 
       <ConfirmDeleteDialog

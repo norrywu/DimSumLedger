@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { PackagePlusIcon, PencilIcon, Trash2Icon } from "lucide-react";
 
 import type { DataTableColumn } from "@/components/common/data-table-card";
 import { IconActionButton } from "@/components/common/icon-action-button";
@@ -17,10 +17,12 @@ import type { Product } from "@/types/products";
  * isi barisnya, bukan cuma penunjuknya.
  */
 export function productColumns({
+  onRequestAdjustStock,
   onRequestEdit,
   onRequestDelete,
   isBusy,
 }: {
+  onRequestAdjustStock: (product: Product) => void;
   onRequestEdit: (product: Product) => void;
   onRequestDelete: (product: Product) => void;
   isBusy: boolean;
@@ -49,7 +51,7 @@ export function productColumns({
             <span className="font-medium text-destructive">Habis (0 pcs)</span>
           );
         }
-        return `${row.stok_pcs} pcs`;
+        return `${row.stok_pcs.toLocaleString("id-ID")} pcs`;
       },
     },
     {
@@ -60,10 +62,18 @@ export function productColumns({
     },
     {
       header: "Aksi",
-      headClassName: "w-24 text-right",
+      headClassName: "w-32 text-right",
       cellClassName: "text-right",
       render: (row) => (
         <div className="flex justify-end gap-1">
+          {row.lacak_stok && (
+            <IconActionButton
+              label={`Catat stok ${row.nama}`}
+              icon={<PackagePlusIcon />}
+              disabled={isBusy}
+              onClick={() => onRequestAdjustStock(row)}
+            />
+          )}
           {/* Nama produk ikut masuk label supaya pengguna screen reader tahu
               baris mana yang dituju, bukan "Ubah" berulang belasan kali. */}
           <IconActionButton

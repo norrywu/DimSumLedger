@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { getProducts } from "@/clients/products";
 import { KATALOG_JUAL_KEY } from "@/constants/cashier-constant";
 import { PRODUCTS_KEY } from "@/constants/products-constant";
+import { STOCK_HISTORY_KEY } from "@/constants/stock-constant";
 import { createProduk, deleteProduk, updateProduk } from "@/servers/products";
 import type { ProductActionResult } from "@/types/products";
 import type { ProductInput } from "@/validations/products-validation";
@@ -44,6 +45,7 @@ export function useCreateProduct(options?: MutationOptions) {
       toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
       queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
+      queryClient.invalidateQueries({ queryKey: STOCK_HISTORY_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {
@@ -64,6 +66,7 @@ export function useUpdateProduct(options?: MutationOptions) {
       toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
       queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
+      queryClient.invalidateQueries({ queryKey: STOCK_HISTORY_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {
@@ -83,6 +86,7 @@ export function useDeleteProduct(options?: MutationOptions) {
       // yang memakai key ini.
       queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
       queryClient.invalidateQueries({ queryKey: KATALOG_JUAL_KEY });
+      queryClient.invalidateQueries({ queryKey: STOCK_HISTORY_KEY });
       options?.onSuccess?.();
     },
     onError: (error) => {

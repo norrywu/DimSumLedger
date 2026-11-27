@@ -2,7 +2,6 @@
 
 import { useWatch, type UseFormReturn } from "react-hook-form";
 
-import { FormField } from "@/components/common/form";
 import { TriggerSheet } from "@/components/sheet-trigger";
 import {
   PRODUCT_FORM_DEFAULTS,
@@ -88,7 +87,6 @@ export function ProductFormSheet({
               category_id: target.product.category_id,
               upah_per_pcs: target.product.upah_per_pcs.toString(),
               lacak_stok: target.product.lacak_stok,
-              stok_pcs: target.product.stok_pcs.toString(),
             }
           : PRODUCT_FORM_DEFAULTS
       }
@@ -97,12 +95,12 @@ export function ProductFormSheet({
       submitLabel={isUbah ? "Simpan perubahan" : "Simpan produk"}
       isPending={isCreating || isUpdating}
     >
-      {(form) => <ProductStockField form={form} />}
+      {(form) => <ProductStockHint form={form} />}
     </TriggerSheet>
   );
 }
 
-function ProductStockField({
+function ProductStockHint({
   form,
 }: {
   form: UseFormReturn<ProductFormValues, unknown, ProductInput>;
@@ -115,17 +113,9 @@ function ProductStockField({
   if (!lacakStok) return null;
 
   return (
-    <div className="grid gap-1.5">
-      <FormField<ProductFormValues, ProductInput>
-        control={form.control}
-        name="stok_pcs"
-        label="Stok (pcs)"
-        type="number"
-        placeholder="mis. 100"
-      />
-      <p className="text-xs text-muted-foreground">
-        Berkurang otomatis sesuai jumlah pcs varian yang terjual.
-      </p>
-    </div>
+    <p className="text-xs text-muted-foreground">
+      Produk baru mulai dari 0 pcs. Tambah atau kurangi stok lewat menu Stok
+      atau tombol cepat di daftar produk.
+    </p>
   );
 }
