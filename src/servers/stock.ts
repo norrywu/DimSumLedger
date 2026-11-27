@@ -44,7 +44,7 @@ export async function catatStok(
     p_product_id: parsed.data.product_id,
     p_jenis: parsed.data.jenis,
     p_jumlah_pcs: parsed.data.jumlah_pcs,
-    p_catatan: parsed.data.catatan,
+    p_catatan: parsed.data.catatan ?? "",
     p_tanggal: parsed.data.tanggal,
   });
 
@@ -83,7 +83,7 @@ export async function ubahRiwayatStok(
     p_id: id,
     p_jenis: parsed.data.jenis,
     p_jumlah_pcs: parsed.data.jumlah_pcs,
-    p_catatan: parsed.data.catatan,
+    p_catatan: parsed.data.catatan ?? "",
     p_tanggal: parsed.data.tanggal,
   });
 
