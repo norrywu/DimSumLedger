@@ -133,7 +133,7 @@ export function DashboardScreen() {
         title="Stok produk"
         headerAction={
           <Button asChild variant="outline" size="sm">
-            <Link href="/APP/admin/products">Kelola stok</Link>
+            <Link href="/APP/admin/stock">Kelola stok</Link>
           </Button>
         }
         columns={[

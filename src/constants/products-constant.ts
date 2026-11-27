@@ -28,7 +28,6 @@ export const PRODUCT_FORM_DEFAULTS: ProductFormValues = {
   category_id: "",
   upah_per_pcs: "",
   lacak_stok: true,
-  stok_pcs: "0",
 };
 
 /**

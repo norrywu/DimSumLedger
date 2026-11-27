@@ -1,4 +1,5 @@
 import {
+  Boxes,
   LayoutDashboard,
   Package,
   Receipt,
@@ -20,12 +21,19 @@ const produk: NavItem = {
   icon: Package,
   items: [
     { title: "Daftar Produk", url: "/APP/admin/products" },
+    { title: "Stok", url: "/APP/admin/stock" },
     { title: "Varian", url: "/APP/admin/variants" },
 
     { title: "Kategori", url: "/APP/admin/categories" },
     { title: "Kemasan", url: "/APP/admin/packagings" },
     { title: "Extra", url: "/APP/admin/extra" },
   ],
+};
+
+const stok: NavItem = {
+  title: "Stok",
+  url: "/APP/admin/stock",
+  icon: Boxes,
 };
 
 const transaksi: NavItem = {
@@ -63,7 +71,7 @@ const transaksiKasir: NavItem = {
   items: [{ title: "Riwayat", url: "/APP/cashier/transactions" }],
 };
 
-const ownerMenu: NavItem[] = [dasbor, transaksi, arusKas];
+const ownerMenu: NavItem[] = [dasbor, stok, transaksi, arusKas];
 
 const managerMenu: NavItem[] = [dasbor, produk, transaksi, arusKas, pengguna];
 

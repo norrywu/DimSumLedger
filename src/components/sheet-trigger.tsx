@@ -32,6 +32,7 @@ export type SheetField<T extends FieldValues> = {
   type?: ComponentProps<typeof Input>["type"] | "select" | "switch";
   placeholder?: string;
   autoComplete?: string;
+  disabled?: boolean;
   /** Pilihan dropdown; hanya dipakai bila type === "select". */
   options?: SelectOption[];
 };
@@ -129,6 +130,7 @@ export function TriggerSheet<
                 type={field.type}
                 placeholder={field.placeholder}
                 autoComplete={field.autoComplete}
+                disabled={field.disabled}
                 options={field.options}
               />
             ))}

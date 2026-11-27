@@ -29,7 +29,7 @@ function errorMessage(
   if (code === "P0001" && pesanDatabase) return pesanDatabase;
   if (code === "23505") return "Produk bernama itu sudah ada.";
   if (code === "23514")
-    return "Nama produk atau jumlah stok tidak masuk akal.";
+    return "Nama produk atau tarif upah tidak masuk akal.";
 
   if (code === "23503") return pesanRelasi;
   if (code === "42501") return "Kamu tidak punya akses mengelola produk.";

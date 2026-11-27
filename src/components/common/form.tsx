@@ -37,6 +37,7 @@ export function FormField<
   type = 'text',
   placeholder,
   autoComplete,
+  disabled,
   options,
 }: FormFieldProps<T, TTransformed>) {
   return (
@@ -67,12 +68,14 @@ export function FormField<
                 onCheckedChange={field.onChange}
                 onBlur={field.onBlur}
                 ref={field.ref}
+                disabled={disabled}
                 aria-invalid={fieldState.invalid}
               />
             ) : type === 'select' ? (
               <Select
                 value={field.value ?? ''}
                 onValueChange={field.onChange}
+                disabled={disabled}
               >
                 <SelectTrigger
                   id={field.name}
@@ -97,6 +100,7 @@ export function FormField<
                     variant="outline"
                     id={field.name}
                     onBlur={field.onBlur}
+                    disabled={disabled}
                     data-empty={!dateValue}
                     aria-invalid={fieldState.invalid}
                     className="w-full justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
@@ -128,6 +132,7 @@ export function FormField<
                 placeholder={placeholder}
                 aria-invalid={fieldState.invalid}
                 autoComplete={autoComplete}
+                disabled={disabled}
               />
             )}
             {fieldState.invalid && (

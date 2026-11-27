@@ -21,6 +21,7 @@ export type FormFieldProps<T extends FieldValues, TTransformed = T> = {
   type?: ComponentProps<typeof Input>["type"] | "select" | "switch";
   placeholder?: string;
   autoComplete?: string;
+  disabled?: boolean;
   /** Pilihan dropdown; hanya dipakai bila type === 'select'. */
   options?: SelectOption[];
 };
